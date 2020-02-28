@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="modulepreload" href="/js/2DGameEngine.js">
+    <link rel="modulepreload" href="/js/SpaceArkanoid/GameResources.js">
+    <link rel="modulepreload" href="/js/SpaceArkanoid/Explosions.js">
+    <link rel="modulepreload" href="/js/SpaceArkanoid/Rockets.js">
+    <link rel="modulepreload" href="/js/SpaceArkanoid/Meteors.js">
+    <link rel="modulepreload" href="/js/SpaceArkanoid/Functions.js">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,user-scalable=no" />
+    <title>Космичекий арканоид</title>
+    <style>
+        body, html{
+            margin: 0;
+            padding: 0;
+        }
+        .content{
+            display: flex;
+        }
+        canvas{
+            display: flex;
+            flex: 1;
+            object-fit: contain;
+            max-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <canvas width="900" height="600" style="width:100%;height:100%;" id="canvas">Возможно Ваш браузер не поддерживает canvas</canvas>
+    </div>
+    <script type="module" src="/js/SpaceArkanoid/Functions.js"></script>
+</body>
+</html>
