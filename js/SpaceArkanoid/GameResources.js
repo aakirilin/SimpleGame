@@ -6,16 +6,6 @@
 export var resources = new Resources();
 
 resources.add("Player", "/SimpleGame/Sprites/Ships/Player.png");
-resources.add("Player_L", "/SimpleGame/Sprites/Ships/Player_L.png");
-resources.add("Player_R", "/SimpleGame/Sprites/Ships/Player_R.png");
-resources.add("SpaceShip2", "/SimpleGame/Sprites/Ships/spaceShips_002.png");
-resources.add("SpaceShip3", "/SimpleGame/Sprites/Ships/spaceShips_003.png");
-resources.add("SpaceShip4", "/SimpleGame/Sprites/Ships/spaceShips_004.png");
-resources.add("SpaceShip5", "/SimpleGame/Sprites/Ships/spaceShips_005.png");
-resources.add("SpaceShip6", "/SimpleGame/Sprites/Ships/spaceShips_006.png");
-resources.add("SpaceShip7", "/SimpleGame/Sprites/Ships/spaceShips_007.png");
-resources.add("SpaceShip8", "/SimpleGame/Sprites/Ships/spaceShips_008.png");
-resources.add("SpaceShip9", "/SimpleGame/Sprites/Ships/spaceShips_009.png");
 
 resources.add("Rocket1", "/SimpleGame/Sprites/Missiles/spaceMissiles_001.png");
 
@@ -28,7 +18,11 @@ resources.add("Meteors4", "/SimpleGame/Sprites/Meteors/spaceMeteors_004.png");
 resources.add("Meteors5", "/SimpleGame/Sprites/Meteors/spaceMeteors_005.png");
 resources.add("Meteors6", "/SimpleGame/Sprites/Meteors/spaceMeteors_006.png");
 
-resources.add("BigExplosion", "/SimpleGame/Sprites/Effects/spaceEffects_016.png");
+resources.add("FuelMeteor", "/SimpleGame/Sprites/Meteors/fuelMeteor.png");
+
+
+resources.add("Back", "/SimpleGame/Sprites/Back/animatedBackground_0040.png");
+
 
 
 resources.add("Up", "/SimpleGame/Sprites/Interface/Up.png");
@@ -38,24 +32,34 @@ resources.add("Rigth", "/SimpleGame/Sprites/Interface/Rigth.png");
 resources.add("Rockets", "/SimpleGame/Sprites/Interface/Rockets.png");
 resources.add("Live", "/SimpleGame/Sprites/Interface/Live.png");
 resources.add("Rocket1Icon", "/SimpleGame/Sprites/Interface/spaceMissiles_001.png");
-
-
-
+resources.add("FuelIcon", "/SimpleGame/Sprites/Interface/fuelIcon.png");
+resources.add("StartNewGameButton", "/SimpleGame/Sprites/Interface/NewGame.png");
+resources.add("ShowHelpButton", "/SimpleGame/Sprites/Interface/Controls.png");
+resources.add("TryAgain", "/SimpleGame/Sprites/Interface/NewGame.png");
+resources.add("Section", "/SimpleGame/Sprites/Interface/Section.png");
+resources.add("Section_H", "/SimpleGame/Sprites/Interface/Section_H.png");
 resources.add("RocketAmmunition", "/SimpleGame/Sprites/Ammunition/Rocket.png");
+resources.add("TheGameIsLost", "/SimpleGame/Sprites/Interface/theGameIsLost.png");
 
-//5ec65a4b3b937130fc36e1340bd52e14.gif
-
-resources.add("Back", "/SimpleGame/Sprites/back.png");
-
+resources.add("BackgroundWin", "/SimpleGame/Sprites/Interface/BackgroundWin.png");
 
 resources.addSequence("SBigExplosion", [
-    "/SimpleGame/Sprites/Effects/spaceEffects_008.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_009.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_010.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_011.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_012.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_013.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_014.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_015.png",
-    "/SimpleGame/Sprites/Effects/spaceEffects_016.png"
+    "/SimpleGame/Sprites/Effects/Explosion_1.png",
+    "/SimpleGame/Sprites/Effects/Explosion_2.png",
+    "/SimpleGame/Sprites/Effects/Explosion_3.png",
+    "/SimpleGame/Sprites/Effects/Explosion_4.png",
+    "/SimpleGame/Sprites/Effects/Explosion_5.png",
+    "/SimpleGame/Sprites/Effects/Explosion_6.png",
+    "/SimpleGame/Sprites/Effects/Explosion_7.png"
+], 5);
+
+resources.addSequence("SMeteorExplosion", [
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_001.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_002.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_003.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_004.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_005.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_006.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_007.png",
+    "/SimpleGame/Sprites/Effects/MeteorExplosion_008.png"
 ], 5);

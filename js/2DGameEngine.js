@@ -128,6 +128,19 @@ export class Point {
     }
 }
 
+export class Rectangle{
+    constructor(top, bottom, left, rigth){
+        this.top=top;
+        this.bottom=bottom;
+        this.left=left;
+        this.rigth=rigth;
+    }
+    isInside(point){
+        return this.left < point.x  && point.x < this.rigth && 
+        this.top < point.y && point.y < this.bottom;
+    }
+}
+
 export class Collision {
     constructor(mass, noMove) {
         this.mass = mass;
@@ -213,6 +226,8 @@ export class GameObject {
         this.hitPoint = Infinity;
         this.onDrow = null;
         this.layer = 0;
+        this.limitPos = null;
+        this.onMove = [];
     }
 
     onDelete() {
@@ -228,10 +243,25 @@ export class GameObject {
     move() {
         var vel = this.velocity.add(this.localVelocity.rotation(this.rotation + 180, new Point(0, 0)));
         this.pos = this.pos.add(vel);
+        if(this.limitPos != null){
+            if(this.pos.y < this.limitPos.top){
+                this.pos.y = this.limitPos.top;
+            }
+            if(this.pos.y > this.limitPos.bottom){
+                this.pos.y = this.limitPos.bottom;
+            }
+            if(this.pos.x < this.limitPos.left){
+                this.pos.x = this.limitPos.left;
+            }
+            if(this.pos.x > this.limitPos.rigth){
+                this.pos.x = this.limitPos.rigth;
+            }
+        }
         this.velocity.x *= this.inertness;
         this.velocity.y *= this.inertness;
         this.localVelocity.x *= this.inertness;
         this.localVelocity.y *= this.inertness;
+        this.onMove.forEach((p) => { p(this.pos); });
     }
 
     drow(_canvas) {
@@ -283,7 +313,6 @@ export class GameObject {
     }
 }
 
-
 export class Scene {
     constructor(_canvas) {
         this.canvas = _canvas;
@@ -293,6 +322,13 @@ export class Scene {
         this.debug = false;
         this.time = new Date();
         this.timers = new Timers();
+        this.keyEvents = new KeyEvents();
+        this.sensorAreas = new SensorAreas();
+        this.variables = new Map();
+        this.runOnMobile = false;
+        this.drowBefore = [];
+        this.drowAfter = [];
+        this.gotoScene = "";
     }
     onPhysics() {
         var moveble = this.rigidBodys.filter((o) => { return !o.collider.noMove; });
@@ -309,7 +345,6 @@ export class Scene {
                 o.collider.afterCollision();
             });
     }
-
     drowLayer(i) {
         this.gameObjects
             .filter((o) => { return o.layer == i; })
@@ -317,7 +352,6 @@ export class Scene {
                 o.drow(this.canvas);
             });
     }
-
     drow() {
         this.gameObjects
             .filter((o) => { return o.hitPoint <= 0;})
@@ -336,6 +370,21 @@ export class Scene {
             this.canvas.fillText(Math.round(1000 / (t - this.time)), canvas.width / 2, canvas.height / 2);
             this.time = t;
         }
+        
+    }
+    nextFrame(){
+        this.tick();
+        this.keyEvents.exeAction();
+        this.sensorAreas.exeAction(this.runOnMobile);
+        this.onPhysics();
+        this.drowBefore.forEach( (o) => {
+            o(this.canvas);
+        } );
+        this.drow();
+        this.drowAfter.forEach( (o) => {
+            o(this.canvas);
+        } );
+        this.sensorAreas.drow(this.canvas, this.runOnMobile);
     }
     addGameObject(go) {
         this.gameObjects.push(go);
@@ -370,21 +419,37 @@ export class Scene {
         this.canvas.font = "48px serif";
         this.canvas.fillText(text, pos.x, pos.y);
     }
+
+    locationsIsBusy(rect){
+        for(var i = 0; i < this.gameObjects.length; i++ ){
+            var o = this.gameObjects[i];
+            if( rect.isInside(o.pos) ||
+            rect.isInside(o.pos.add(new Point(o.inmage.width, 0))) ||
+            rect.isInside(o.pos.add(new Point(0, o.inmage.height))) ||
+            rect.isInside(o.pos.add(new Point(o.inmage.width, o.inmage.height)))
+                ){
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 export class Resources {
     constructor() {
         this.imgs = new Map();
         this.countLoads = 0;
+        this.all = 0;
         this.Err = false;
         this.onDone = null;
     }
 
     isDone() {
-        return this.imgs.size == this.countLoads;
+        return this.all == this.countLoads;
     }
 
     add(name, src) {
+        this.all += 1;
         var image = new SingleImage(src);
         this.imgs.set(name, image);
         image.onload = () => {
@@ -396,19 +461,37 @@ export class Resources {
     }
 
     addSequence(name, imgs, delay){
-        var images = new ImageSequence(imgs, delay);
-        this.imgs.set(name, images);
-        images.onload = () => {
-            this.countLoads += 1;
-            if (this.isDone() && this.onDone != null) {
-                this.onDone();
-            }
-        };
+        imgs.forEach((i) => {
+            var img = new Image();
+            img.src = i;
+            this.all += 1;
+            img.onload = () => {
+                this.countLoads += 1;
+                if (this.isDone() && this.onDone != null) {
+                    this.onDone();
+                }
+            };
+            this.imgs.set(i, img);
+        });
+        this.imgs.set(name, ()=> {
+            var images = [];
+            imgs.forEach((i) => {
+                images.push(this.get(i));
+            });
+            return new ImageSequence(images, delay, images[0].width, images[0].height);
+        });
     }
 
     get(name) {
         if (this.imgs.has(name)) {
-            return this.imgs.get(name);
+            var item = this.imgs.get(name);
+            if(typeof item === "function"){
+                return item();
+            }
+            else
+            {
+                return item;
+            }
         }
         return null;
     }
@@ -435,31 +518,13 @@ export class SingleImage{
 }
 
 export class ImageSequence{
-    constructor(imgs, delay){
-        this.images = [];
+    constructor(images, delay, width, height){
+        this.images = images;
         this.currentImg = 0;
-        this.onload = null;
-        this.countLoad = 0;
         this.delay = delay;
         this.timer = 0;
-        this.width = 0;
-        this.height = 0;
-        imgs.forEach((e) =>{
-            var image = new Image();
-            image.src = e;
-            this.images.push(image);
-            image.onload = ()=>{
-                this.countLoad += 1;
-                this.afterLoadAll();
-                this.width = image.width;
-                this.height = image.height;
-            };
-        });
-    }
-    afterLoadAll(){
-        if(this.images.length == this.countLoad && this.onload != null){
-            this.onload();
-        }
+        this.width = width;
+        this.height = height;
     }
     nextFrame(){
         if(this.timer >= this.delay){
@@ -493,10 +558,14 @@ export class SpavnArea {
         this.timer = timer;
     }
 
-    getRandomPoint(w, h) {
-        return new Point(
-            randomInteger(this.beign.x, this.end.x - w),
-            randomInteger(this.beign.y - h, this.end.y - h));
+    getRandomPoint(w, h, scene) {
+        var p = null;
+        do{
+            p = new Point(
+                randomInteger(this.beign.x, this.end.x - w),
+                randomInteger(this.beign.y - h, this.end.y - h));
+        } while(scene.locationsIsBusy(new Rectangle(p.y, p.y + h, p.x, p.x + w)));
+        return p;
     }
 
     getRandomObject() {
@@ -506,18 +575,14 @@ export class SpavnArea {
 
     spavn() {
         var obj = this.getRandomObject()();
-        obj.pos = this.getRandomPoint(obj.inmage.width, obj.inmage.height);
+        obj.pos = this.getRandomPoint(obj.inmage.width, obj.inmage.height, this.scene);
         this.scene.addGameObject(obj);
-        /*
-        setTimeout(() => {
-            this.spavn();
-        }, this.timer);
-        */
+        return obj;
     }
 }
 
 export class SensorArea {
-    constructor(imege, pos, action, onState = alwes) {
+    constructor(imege, pos, action, onState = alwes, showConstantly = false) {
         this.imege = imege;
         this.pos = pos;
         this.radius = this.imege.width / 4 + this.imege.height / 4;
@@ -525,9 +590,7 @@ export class SensorArea {
         this.onState = onState;
         this.action = action;
         this.id = null;
-        console.log(pos);
-        console.log(this.center());
-        console.log(imege);
+        this.showConstantly = showConstantly;
     }
 
     drow(_canvas) {
@@ -540,26 +603,40 @@ export class SensorArea {
             this.imege.height / 2 + this.pos.y);
     }
 
-    mouseDown(point) {
-        var d = this.center().distance(point);
-        if (d <= this.radius) {
-            this.isPress = true;
-        }
+    mouseDown(point, e, s) {
+        var p = new Point(point.clientX, point.clientY).sub(e);
+        p = new Point(p.x * s.x, p.y * s.y); 
+        this.isPress = this.isTorhced(p);
     }
 
-    mouseUp(point) {
-        var d = center().distance(point);
-        if (d <= this.radius) {
+    mouseUp(point, e, s) {
+        var p = new Point(point.clientX, point.clientY).sub(e);
+        p = new Point(p.x * s.x, p.y * s.y);
+        this.isPress = false;
+    }
+
+    mouseMove(point, e, s) {
+        var p = new Point(point.clientX, point.clientY).sub(e);
+        p = new Point(p.x * s.x, p.y * s.y);
+        if(this.isPress && !this.isTorhced(p)){
             this.isPress = false;
-        }
+        } 
+    }
+
+    getRectangle(){
+        return new Rectangle(this.pos.y, this.pos.y + this.imege.height, this.pos.x, this.pos.x + this.imege.width);
+    }
+
+    isTorhced(point){
+        return this.getRectangle().isInside(point);
     }
 
     touchstart(evt, e, s) {
         var touches = evt.changedTouches;
         for (var i = 0; i < touches.length; i++) {
-            var p = new Point(touches[i].pageX, touches[i].pageY).sub(e);
+            var p = new Point(touches[i].clientX, touches[i].clientY).sub(e);
             p = new Point(p.x * s.x, p.y * s.y); 
-            if (this.center().distance(p) <= this.radius) {
+            if (this.isTorhced(p)) {
                 this.isPress = true;
                 this.id = touches[i].identifier;
             }
@@ -570,9 +647,9 @@ export class SensorArea {
         var touches = evt.changedTouches;
         this.isPress = false;
         for (var i = 0; i < touches.length; i++) {
-            var p = new Point(touches[i].pageX, touches[i].pageY).sub(e);
+            var p = new Point(touches[i].clientX, touches[i].clientY).sub(e);
             p = new Point(p.x * s.x, p.y * s.y); 
-            if (this.center().distance(p) <= this.radius) {
+            if (this.isTorhced(p)) {
                 this.isPress = true;
                 this.id = touches[i].identifier;
             }
@@ -607,15 +684,29 @@ export class SensorAreas {
         this.areas.push(area);
     }
 
-    drow(canvas) {
+    drow(canvas, runOnMobile) {
         this.areas.forEach((a) => {
-            a.drow(canvas);
+            if(runOnMobile || a.showConstantly){
+                a.drow(canvas);
+            }
         });
     }
 
-    mouseDown(point) {
+    mouseDown(point, e, s) {
         this.areas.forEach((a) => {
-            a.mouseDown(point);
+            a.mouseDown(point, e, s);
+        });
+    }
+
+    mouseMove(point, e, s) {
+        this.areas.forEach((a) => {
+            a.mouseMove(point, e, s);
+        });
+    }
+
+    mouseUp(point, e, s) {
+        this.areas.forEach((a) => {
+            a.mouseUp(point, e, s);
         });
     }
 
@@ -639,9 +730,11 @@ export class SensorAreas {
 
 
 
-    exeAction() {
+    exeAction(runOnMobile) {
         this.areas.forEach((a) => {
-            a.exeAction();
+            if(runOnMobile || a.showConstantly){
+                a.exeAction();
+            }
         });
     }
 }
@@ -682,12 +775,15 @@ export class Timers {
 export class Timer {
     constructor(time, onTimeOut, interval = 0) {
         // /1000*60 нужно что бы перевести из фреймов в секунды.
-        this.time = time / 1000 * 60;
+        this.time = Timer.inMS(time);
         this.onTimeOut = onTimeOut;
         this.interval = interval / 1000 * 60;
         this.enable = true;
+        this.onTick = null;
     }
-
+    static inMS(frame){
+        return frame / 1000 * 60;
+    }
     tick() {
         if (this.enable != true) {
             return;
@@ -697,6 +793,9 @@ export class Timer {
             this.onTimeOut();
             this.time = this.interval;
         }
+        if(this.onTick != null){
+            this.onTick();
+        }
     }
 
 }
@@ -704,9 +803,20 @@ export class Timer {
 
 export var speedAlwaysMove = 0.9;
 
-export function alwaysMove(go) {
-    go.velocity.y = speedAlwaysMove;
+export function alwaysMove(go, speed, scene) {
+    go.velocity.y = speed;
     if (go.pos.y > canvas.height + 10) {
         go.hitPoint = 0;
+        go.onDeleteMethod = null;
     }
+}
+
+export function canvasScale(canvas) {
+    return new Point(
+        canvas.width / canvas.clientWidth, canvas.height / canvas.clientHeight
+    );
+}
+
+export function canvasOffset(canvas) {
+    return new Point(canvas.offsetLeft - document.body.scrollLeft, canvas.offsetTop - document.body.scrollTop);
 }

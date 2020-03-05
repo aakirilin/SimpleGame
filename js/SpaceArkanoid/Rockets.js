@@ -35,10 +35,10 @@ export function spavnRocket_litle_001(master, spavnPoint, timeLive, scene) {
     scene.addGameObjectWithLiveTime(rocket, timeLive);
 }
 
-export function spavnRocketAmmunition(onCollision) {
+export function spavnRocketAmmunition(onCollision, speed) {
     var rocket = new GameObject(resources.get("RocketAmmunition"), new Point(0,0));
     rocket.collider = new CircleCollision(30, 1, false);
-    rocket.onDrow = alwaysMove;
+    rocket.onDrow = (o) => { alwaysMove(o, speed)};
     rocket.collider.onCollision = (e) => { onCollision(e); };
     rocket.collider.afterCollision = () => {
         rocket.hitPoint = 0; 
