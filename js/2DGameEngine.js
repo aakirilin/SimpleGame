@@ -5,6 +5,7 @@ export const keyRigth = 39;
 
 export const keyA = 65;
 export const keyD = 68;
+export const enter = 13;
 
 export const onlu = "onlu";
 export const alwes = "alwes";

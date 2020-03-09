@@ -1,15 +1,17 @@
 ﻿import {
     canvasScale,
     canvasOffset,
-    runOnMobile
-} from "/SimpleGame/js/2DGameEngine.js";
-import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
+    runOnMobile,
+    enter
+} from "/js/2DGameEngine.js";
+import { resources } from "/js/SpaceArkanoid/GameResources.js";
 import{
     CreateLevel,
     CreateMainMenu,
     CreateTryAgain,
-    CreateControlsScrean
-} from "/SimpleGame/js/SpaceArkanoid/SpaceArcanoid.js";
+    CreateControlsScrean,
+    CreateWinScrean
+} from "/js/SpaceArkanoid/SpaceArcanoid.js";
 
 ////////////////////////////////////////////////
 // переменные
@@ -26,6 +28,9 @@ var pause = false;
 function OnKeyDown(e){
     if(level != null){
         level.keyEvents.onKeyDown(e.keyCode);
+    }
+    if(e.keyCode == enter){
+        pause = !pause;
     }
 }
 
@@ -105,7 +110,10 @@ function GotoTryAgain(){
 function GotoCreateControlsScrean(){
     level = CreateControlsScrean(canvas);
 }  
-//CreateControlsScrean
+
+function GotoCreateWinScrean(){
+    level = CreateWinScrean(canvas);
+}
 
 resources.onDone = () => {
     GotoMainMenu();
@@ -122,17 +130,29 @@ resources.onDone = () => {
 };
 
 function loadScrean() {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = "48px serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "#120D21";
-    ctx.fillText("Загрузка", canvas.width / 2, canvas.height / 2)
+    ctx.fillText("Загрузка...", canvas.width / 2, canvas.height / 2)
 }
 
 function pauseScrean() {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = "48px serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "#120D21";
-    ctx.fillText("Пауза", canvas.width / 2, canvas.height / 2)
+    ctx.fillText("Пауза.", canvas.width / 2, canvas.height / 2);
+    ctx.font = "32px serif";
+    if(runOnMobile()){
+        ctx.fillText("Поверните устройство, что бы продолжить.", canvas.width / 2, canvas.height / 2 + 48);
+    }
+    else{
+        ctx.fillText("Нажмите ентэр, что бы продолжить.", canvas.width / 2, canvas.height / 2 + 48)
+    }
+    
 }
 
 var canvasHeight = canvas.height;
@@ -142,12 +162,13 @@ function onResize(){
     var perrentCanvas = document.getElementById("perrentCanvas");
     var bodyW = perrentCanvas.offsetWidth;
     var bodyH = perrentCanvas.offsetHeight;
-    if(bodyH > bodyW){
-        var swap = bodyW;
-        bodyW = bodyH;
-        bodyH = swap;
+    var scale = 1;
+    if(bodyW / bodyH < canvasWight / canvasHeight){
+        scale = canvasWight / bodyW  * 1.1;
     }
-    var scale = canvasHeight / bodyH  * 1.1;
+    else{
+        scale = canvasHeight / bodyH  * 1.1;
+    }
     canvas.width = bodyW * scale;
     canvas.height = bodyH * scale;
     if(level != null){
@@ -156,7 +177,8 @@ function onResize(){
 }
 
 function onOrientationchange(){
-    pause = screen.orientation.angle == 0 &&  runOnMobile();
+    console.log(screen.orientation.angle);
+    pause = (screen.orientation.angle == 0 || screen.orientation.angle == 180) &&  runOnMobile();
     onResize();
 }
 
@@ -182,6 +204,9 @@ function draw() {
             }
             if(level.gotoScene == "MainMenu"){
                 GotoMainMenu(); 
+            }
+            if(level.gotoScene == "WinScrean"){
+                GotoCreateWinScrean(); 
             }
         }
         else {

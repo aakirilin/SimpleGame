@@ -20,13 +20,13 @@ import {
     Rectangle,
     alwes,
     runOnMobile
-} from "/SimpleGame/js/2DGameEngine.js";
+} from "/js/2DGameEngine.js";
 
-import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
+import { resources } from "/js/SpaceArkanoid/GameResources.js";
 import {
     spavnRocket_litle_001,
     spavnRocketAmmunition
-} from "/SimpleGame/js/SpaceArkanoid/Rockets.js";
+} from "/js/SpaceArkanoid/Rockets.js";
 import {
     getBigMeteor_001,
     getBigMeteor_002,
@@ -34,7 +34,7 @@ import {
     getBigMeteor_004,
     getSmallMeteor_001,
     getSmallMeteor_002
-} from "/SimpleGame/js/SpaceArkanoid/Meteors.js";
+} from "/js/SpaceArkanoid/Meteors.js";
 
 const offset = 10;
 const heigthProgress = 15;
@@ -70,6 +70,12 @@ function showMainMenu(scene){
     }
 }
 
+
+function showWinScrean(scene){
+    return () =>{
+        scene.gotoScene = "WinScrean";
+    }
+}
 
 function drowPlayerHitPoint(canvas, player){
     var step = 10;
@@ -114,7 +120,6 @@ function drowFuelCount(canvas, count){
 }
 
 function drowProgress(canvas, canvasW, current, max){
-    
     var x = canvasW * (max - current) / max;
     canvas.fillStyle = "green";
     canvas.fillRect(0, 0, x, heigthProgress);
@@ -137,7 +142,7 @@ export function CreateLevel(canvas){
     scene.variables.set("maxRockrtCount", 100);
     scene.variables.set("meteorsSpavtTime",2000);
     scene.variables.set("ammunitionSpavtTime", 9000);
-    scene.variables.set("maxProgress", 1000000);
+    scene.variables.set("maxProgress", 10000);
     scene.variables.set("speedAlwaysMove", 2);
 
     scene.variables.set("fuel", 1000);
@@ -166,8 +171,13 @@ export function CreateLevel(canvas){
         var mp = Timer.inMS(scene.variables.get("maxProgress"));
         var newT = 2000 - 1800 * (mp - progressTimer.time) / mp;
         scene.variables.set("meteorsSpavtTime", newT);
+        if(progressTimer.time <= 0){
+            showWinScrean(scene)();
+        }
      };
-    scene.drowAfter.push( (c) => {drowProgress(c, canvas.width, progressTimer.time, Timer.inMS(scene.variables.get("maxProgress")))} );
+    scene.drowAfter.push( (c) => {
+        drowProgress(c, canvas.width, progressTimer.time, Timer.inMS(scene.variables.get("maxProgress")))
+    } );
 
     // игрок
     var player = new GameObject(resources.get("Player"), new Point(0, 0), 0);
@@ -386,7 +396,12 @@ export function CreateMainMenu(canvas){
     return scene;
 }
 
+function GetPosTryAgainButton(anvasWidth, canvasHeight, width, offsetY){
+    return new Point(anvasWidth  / 2 - width / 2, canvasHeight / 2 + offsetY )
+}
+
 export function CreateTryAgain(canvas){
+    var offsetY = 140;
     var tryAgainButton = resources.get("TryAgain");
     var ctx = canvas.getContext("2d");
     var scene = new Scene(ctx);
@@ -397,10 +412,10 @@ export function CreateTryAgain(canvas){
 
     var tryAgainArea = new SensorArea(
         tryAgainButton,
-        new Point(canvas.width  / 2 - tryAgainButton.width / 2, canvas.height / 2),
+        GetPosTryAgainButton(canvas.width, canvas.height, tryAgainButton.width, offsetY),
         startNewGame(scene), alwes, true
     );
-    tryAgainArea.onResize = (c) =>{tryAgainArea.pos = new Point(c.width  / 2 - tryAgainButton.width / 2, c.height / 2)  };
+    tryAgainArea.onResize = (c) =>{tryAgainArea.pos = GetPosTryAgainButton(c.width, c.height, tryAgainArea.width, offsetY)};
 
     scene.sensorAreas.addArea(tryAgainArea);
     return scene;
@@ -432,6 +447,27 @@ export function CreateControlsScrean(canvas){
         showMainMenu(scene), alwes, true
     );
     toBeackArea.onResize = (c) =>{toBeackArea.pos = GetToBeackButton(canvas.width, canvas.height, toBeack.width, toBeack.height, offset) };
+
+    scene.sensorAreas.addArea(toBeackArea);
+    return scene;
+}
+
+export function CreateWinScrean(canvas){
+    var toBeack = resources.get("ToBeak");
+    var offsetY = 140;
+    var ctx = canvas.getContext("2d");
+    var scene = new Scene(ctx);
+    scene.runOnMobile = !!('ontouchstart' in window);
+    scene.drowBefore.push( (c) => { 
+        DrowInCenter(resources.get("BackgroundWin").nextFrame(), c, canvas);
+    } );
+
+    var toBeackArea = new SensorArea(
+        toBeack,
+        GetPosTryAgainButton(canvas.width, canvas.height, toBeack.width, offsetY),
+        showMainMenu(scene), alwes, true
+    );
+    toBeackArea.onResize = (c) =>{tryAgainArea.pos = GetPosTryAgainButton(c.width, c.height, toBeack.width, offsetY)};
 
     scene.sensorAreas.addArea(toBeackArea);
     return scene;
