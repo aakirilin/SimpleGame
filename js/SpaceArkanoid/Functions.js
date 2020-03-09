@@ -177,7 +177,7 @@ function onResize(){
 }
 
 function onOrientationchange(){
-    pause = (screen.orientation.angle == 0 || screen.orientation.angle == 180) &&  runOnMobile();
+    pause = runOnMobile() && (screen.orientation.angle == 0 || screen.orientation.angle == 180);
     onResize();
 }
 
