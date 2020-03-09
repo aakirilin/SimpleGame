@@ -3,10 +3,10 @@
     Point,
     CircleCollision,
     alwaysMove
-} from "js/2DGameEngine.js";
+} from "./js/2DGameEngine.js";
 
-import { resources } from "js/SpaceArkanoid/GameResources.js";
-import { ExplosionBig_001 } from "js/SpaceArkanoid/Explosions.js";
+import { resources } from "./js/SpaceArkanoid/GameResources.js";
+import { ExplosionBig_001 } from "./js/SpaceArkanoid/Explosions.js";
 
 export class Rocket extends GameObject {
     constructor(img, master, spavnPoint, radius, damage) {
