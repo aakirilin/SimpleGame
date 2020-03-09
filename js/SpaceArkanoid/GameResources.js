@@ -35,13 +35,15 @@ resources.add("Rocket1Icon", "/SimpleGame/Sprites/Interface/spaceMissiles_001.pn
 resources.add("FuelIcon", "/SimpleGame/Sprites/Interface/fuelIcon.png");
 resources.add("StartNewGameButton", "/SimpleGame/Sprites/Interface/NewGame.png");
 resources.add("ShowHelpButton", "/SimpleGame/Sprites/Interface/Controls.png");
-resources.add("TryAgain", "/SimpleGame/Sprites/Interface/NewGame.png");
+resources.add("TryAgain", "/SimpleGame/Sprites/Interface/TryAgain.png");
 resources.add("Section", "/SimpleGame/Sprites/Interface/Section.png");
 resources.add("Section_H", "/SimpleGame/Sprites/Interface/Section_H.png");
 resources.add("RocketAmmunition", "/SimpleGame/Sprites/Ammunition/Rocket.png");
 resources.add("TheGameIsLost", "/SimpleGame/Sprites/Interface/theGameIsLost.png");
-
-resources.add("BackgroundWin", "/SimpleGame/Sprites/Interface/BackgroundWin.png");
+resources.add("ToBeak", "/SimpleGame/Sprites/Interface/ToBeak.png");
+resources.add("Intro", "/SimpleGame/Sprites/Interface/Intro.png");
+resources.add("ControlsScrean", "/SimpleGame/Sprites/Interface/ControlsScrean.png");
+resources.add("ControlsScreanMobile", "/SimpleGame/Sprites/Interface/ControlsScreanMobile.png");
 
 resources.addSequence("SBigExplosion", [
     "/SimpleGame/Sprites/Effects/Explosion_1.png",

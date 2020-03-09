@@ -1,12 +1,14 @@
 ﻿import {
     canvasScale,
-    canvasOffset
+    canvasOffset,
+    runOnMobile
 } from "/js/2DGameEngine.js";
 import { resources } from "/js/SpaceArkanoid/GameResources.js";
 import{
     CreateLevel,
     CreateMainMenu,
-    CreateTryAgain
+    CreateTryAgain,
+    CreateControlsScrean
 } from "/js/SpaceArkanoid/SpaceArcanoid.js";
 
 ////////////////////////////////////////////////
@@ -100,10 +102,15 @@ function GotoTryAgain(){
     level = CreateTryAgain(canvas);
 }   
 
+function GotoCreateControlsScrean(){
+    level = CreateControlsScrean(canvas);
+}  
+//CreateControlsScrean
+
 resources.onDone = () => {
     GotoMainMenu();
-    document.addEventListener("keydown", OnKeyDown);
-    document.addEventListener("keyup", OnKeyUp);
+    window.addEventListener("keydown", OnKeyDown);
+    window.addEventListener("keyup", OnKeyUp);
     canvas.addEventListener("touchstart", OnTouchStart, false);
     canvas.addEventListener("touchend", OnTouchEnd, false);
     canvas.addEventListener("touchmove", OnTouchMove, false);
@@ -118,12 +125,47 @@ function loadScrean() {
     ctx.font = "48px serif";
     ctx.textAlign = "center";
     ctx.fillStyle = "#120D21";
-    ctx.fillText("Loading", canvas.width / 2, canvas.height / 2)
+    ctx.fillText("Загрузка", canvas.width / 2, canvas.height / 2)
 }
 
-canvas.width = document.body.clientWidth;
+function pauseScrean() {
+    ctx.font = "48px serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#120D21";
+    ctx.fillText("Пауза", canvas.width / 2, canvas.height / 2)
+}
 
-canvas.height = document.body.clientHeight;
+var canvasHeight = canvas.height;
+var canvasWight = canvas.width;
+
+function onResize(){
+    var perrentCanvas = document.getElementById("perrentCanvas");
+    var bodyW = perrentCanvas.offsetWidth;
+    var bodyH = perrentCanvas.offsetHeight;
+    if(bodyH > bodyW){
+        var swap = bodyW;
+        bodyW = bodyH;
+        bodyH = swap;
+    }
+    var scale = canvasHeight / bodyH  * 1.1;
+    canvas.width = bodyW * scale;
+    canvas.height = bodyH * scale;
+    if(level != null){
+        level.onResize(canvas);
+    }
+}
+
+function onOrientationchange(){
+    pause = screen.orientation.angle == 0 &&  runOnMobile();
+    onResize();
+}
+
+onResize();
+onOrientationchange();
+
+window.addEventListener("resize", onResize);
+window.addEventListener("orientationchange", onOrientationchange);
+
 
 function draw() {
     if (pause == false) {
@@ -135,10 +177,19 @@ function draw() {
             if(level.gotoScene == "TryAgain"){
                 GotoTryAgain(); 
             }
+            if(level.gotoScene == "Help"){
+                GotoCreateControlsScrean(); 
+            }
+            if(level.gotoScene == "MainMenu"){
+                GotoMainMenu(); 
+            }
         }
         else {
             loadScrean();
         }
+    }
+    else{
+        pauseScrean();
     }
     requestAnimationFrame(draw);
 }

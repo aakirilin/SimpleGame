@@ -18,7 +18,8 @@ import {
     canvasScale,
     canvasOffset,
     Rectangle,
-    alwes
+    alwes,
+    runOnMobile
 } from "/js/2DGameEngine.js";
 
 import { resources } from "/js/SpaceArkanoid/GameResources.js";
@@ -60,6 +61,12 @@ function showHelp(scene){
 function showTryAgain(scene){
     return () =>{
         scene.gotoScene = "TryAgain";
+    }
+}
+
+function showMainMenu(scene){
+    return () =>{
+        scene.gotoScene = "MainMenu";
     }
 }
 
@@ -172,6 +179,7 @@ export function CreateLevel(canvas){
     scene.addGameObject(player);
     player.hitPoint = 100;
     player.limitPos = new Rectangle(0, canvas.height - player.inmage.height, 0, canvas.width - player.inmage.width);
+    player.onResize = (c) => {player.limitPos = new Rectangle(0, c.height - player.inmage.height, 0, c.width - player.inmage.width)};
     var playerRocketTimer = new Timer(300, () => {
         scene.variables.set("ceanShot", true);
         playerRocketTimer.enable = false;
@@ -210,8 +218,8 @@ export function CreateLevel(canvas){
     var ceanSpavn = true;
     var spavnArea1 = new SpavnArea(
         scene,
-        new Point(0, 0),
-        new Point(canvas.width, 0),
+        () => {return new Point(0, 0);},
+        () => {return new Point(canvas.width, 0);},
         [   
             () => {return getBigMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
             () => {return getBigMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
@@ -227,8 +235,8 @@ export function CreateLevel(canvas){
 
     var spavnAmmunition = new SpavnArea(
         scene,
-        new Point(0, 0),
-        new Point(canvas.width, 0),
+        () => {return new Point(0, 0);},
+        () => {return new Point(canvas.width, 0);},
         [
             player.methods.get("spavnRAmmunition")
         ],
@@ -293,32 +301,34 @@ export function CreateLevel(canvas){
     // события сенсорного экрана для телефонов
     var sensorAreaMoveUp = new SensorArea(
         resources.get("Up"),
-        new Point(50, canvas.height - 150),
+        new Point(100, canvas.height - 300),
         playerMoveToUp
     );
 
     var sensorAreaMoveDown = new SensorArea(
         resources.get("Down"),
-        new Point(50, canvas.height - 50),
+        new Point(100, canvas.height - 100),
         playerMoveToDown
     );
 
     var sensorAreaMoveLeft = new SensorArea(
         resources.get("Left"),
-        new Point(0, canvas.height - 100),
+        new Point(0, canvas.height - 200),
         playerMoveToLeft
     );
 
     var sensorAreaMoveRigth = new SensorArea(
         resources.get("Rigth"),
-        new Point(100, canvas.height - 100),
+        new Point(200, canvas.height - 200),
         playerMoveToRigth
     );
     var RocketsAttak = new SensorArea(
         resources.get("Rockets"),
-        new Point(canvas.width - 70, canvas.height - 70),
+        new Point(canvas.width - 100, canvas.height - 100),
         playerShootRocket
     );
+    RocketsAttak.onResize = (c) =>{ RocketsAttak.pos = new Point(c.width - 100, c.height - 100)  };
+
     scene.sensorAreas.addArea(sensorAreaMoveUp);
     scene.sensorAreas.addArea(sensorAreaMoveDown);
     scene.sensorAreas.addArea(sensorAreaMoveLeft);
@@ -337,27 +347,38 @@ function DrowInCenter(img, ctx, canvas){
     ctx.drawImage(img, x, y); 
 }
 
+function GetPosStartNewGameButton(canvasWidth, canvasHeight, width, offsetX, offsetY){
+    return new Point(canvasWidth  / 2 - width  - offsetX, canvasHeight / 2 + offsetY)
+}
+
+function GetPosHelpButton(canvasWidth, canvasHeight, width, offsetX, offsetY){
+    return new Point(canvasWidth  / 2 + offsetX, canvasHeight / 2 + offsetY)
+}
 
 export function CreateMainMenu(canvas){
+    var offsetX = 10;
+    var offsetY = 140;
     var startNewGameButton = resources.get("StartNewGameButton");
     var showHelpButton = resources.get("ShowHelpButton");
     var ctx = canvas.getContext("2d");
     var scene = new Scene(ctx);
     scene.runOnMobile = !!('ontouchstart' in window);
     scene.drowBefore.push( (c) => { 
-        DrowInCenter(resources.get("BackgroundWin").nextFrame(), c, canvas);
+        DrowInCenter(resources.get("Intro").nextFrame(), c, canvas);
     } );
 
     var startNewGameArea = new SensorArea(
         startNewGameButton,
-        new Point(canvas.width  / 2 - startNewGameButton.width / 2, canvas.height / 2),
+        GetPosStartNewGameButton(canvas.width, canvas.height, startNewGameButton.width, offsetX, offsetY),
         startNewGame(scene), alwes, true
     );
+    startNewGameArea.onResize = (c) =>{startNewGameArea.pos= GetPosStartNewGameButton(c.width, c.height, startNewGameButton.width, offsetX, offsetY)};
     var showHelpArea = new SensorArea(
         showHelpButton,
-        new Point(canvas.width  / 2 - showHelpButton.width / 2, canvas.height / 2 + 10 + startNewGameButton.height),
+        GetPosHelpButton(canvas.width, canvas.height, showHelpButton.width, offsetX, offsetY),
         showHelp(scene), alwes, true
     );
+    showHelpArea.onResize = (c) =>{ showHelpArea.pos = GetPosHelpButton(c.width, c.height, showHelpButton.width, offsetX, offsetY)  };
 
     scene.sensorAreas.addArea(startNewGameArea);
     scene.sensorAreas.addArea(showHelpArea);
@@ -379,7 +400,39 @@ export function CreateTryAgain(canvas){
         new Point(canvas.width  / 2 - tryAgainButton.width / 2, canvas.height / 2),
         startNewGame(scene), alwes, true
     );
+    tryAgainArea.onResize = (c) =>{tryAgainArea.pos = new Point(c.width  / 2 - tryAgainButton.width / 2, c.height / 2)  };
 
     scene.sensorAreas.addArea(tryAgainArea);
+    return scene;
+}
+
+function GetToBeackButton(canvasWidth, canvasHeight, width, height, offset){
+    return new Point(canvasWidth / 2 + 450 - width - offset, canvasHeight / 2 + 300 - offset - height);
+}
+
+export function CreateControlsScrean(canvas){
+    var toBeack = resources.get("ToBeak");
+    var offset = 10;
+    var ctx = canvas.getContext("2d");
+    var scene = new Scene(ctx);
+    scene.runOnMobile = !!('ontouchstart' in window);
+    scene.drowBefore.push( (c) => { 
+        if(runOnMobile()){
+            DrowInCenter(resources.get("ControlsScreanMobile").nextFrame(), c, canvas);
+        }
+        else{
+            DrowInCenter(resources.get("ControlsScrean").nextFrame(), c, canvas);
+        }
+       
+    } );
+
+    var toBeackArea = new SensorArea(
+        toBeack,
+        GetToBeackButton(canvas.width, canvas.height, toBeack.width, toBeack.height, offset),
+        showMainMenu(scene), alwes, true
+    );
+    toBeackArea.onResize = (c) =>{toBeackArea.pos = GetToBeackButton(canvas.width, canvas.height, toBeack.width, toBeack.height, offset) };
+
+    scene.sensorAreas.addArea(toBeackArea);
     return scene;
 }

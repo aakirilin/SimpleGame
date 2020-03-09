@@ -9,25 +9,8 @@ export const keyD = 68;
 export const onlu = "onlu";
 export const alwes = "alwes";
 
-export const isMobile = {
-    Android: function () {
-        return navigator.userAgent.match(/Android/i);
-    },
-    BlackBerry: function () {
-        return navigator.userAgent.match(/BlackBerry/i);
-    },
-    iOS: function () {
-        return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-    },
-    Opera: function () {
-        return navigator.userAgent.match(/Opera Mini/i);
-    },
-    Windows: function () {
-        return navigator.userAgent.match(/IEMobile/i);
-    },
-    any: function () {
-        return (isMobile.Android() || isMobile.BlackBerry() || isMobile.iOS() || isMobile.Opera() || isMobile.Windows());
-    }
+export function runOnMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent);
 };
 
 export class KeyEvent {
@@ -228,6 +211,7 @@ export class GameObject {
         this.layer = 0;
         this.limitPos = null;
         this.onMove = [];
+        this.onResize = null;
     }
 
     onDelete() {
@@ -330,6 +314,14 @@ export class Scene {
         this.drowAfter = [];
         this.gotoScene = "";
     }
+
+    onResize(canvas){
+        this.gameObjects
+            .filter((o) => {return o.onResize != null})
+            .forEach((o) =>{o.onResize(canvas)});
+            this.sensorAreas.onResize(canvas);
+    }
+
     onPhysics() {
         var moveble = this.rigidBodys.filter((o) => { return !o.collider.noMove; });
         moveble.forEach((o) => {
@@ -556,14 +548,17 @@ export class SpavnArea {
         this.objects = objects;
         this.scene = scene;
         this.timer = timer;
+        this.onResize = null;
     }
 
     getRandomPoint(w, h, scene) {
         var p = null;
+        var begin = this.beign();
+        var end = this.end();
         do{
             p = new Point(
-                randomInteger(this.beign.x, this.end.x - w),
-                randomInteger(this.beign.y - h, this.end.y - h));
+                randomInteger(begin.x, end.x - w),
+                randomInteger(begin.y - h, end.y - h));
         } while(scene.locationsIsBusy(new Rectangle(p.y, p.y + h, p.x, p.x + w)));
         return p;
     }
@@ -591,6 +586,7 @@ export class SensorArea {
         this.action = action;
         this.id = null;
         this.showConstantly = showConstantly;
+        this.onResize = null;
     }
 
     drow(_canvas) {
@@ -679,6 +675,14 @@ export class SensorAreas {
     constructor() {
         this.areas = [];
     }
+
+    
+    onResize(canvas){
+        this.areas
+            .filter((a) => {return a.onResize != null})
+            .forEach((a) =>{a.onResize(canvas)});
+    }
+
 
     addArea(area) {
         this.areas.push(area);
