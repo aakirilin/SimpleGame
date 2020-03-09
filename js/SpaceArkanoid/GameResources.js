@@ -39,7 +39,7 @@ resources.add("TryAgain", "/SimpleGame/SimpleGame/Sprites/Interface/TryAgain.png
 resources.add("Section", "/SimpleGame/SimpleGame/Sprites/Interface/Section.png");
 resources.add("Section_H", "/SimpleGame/SimpleGame/Sprites/Interface/Section_H.png");
 resources.add("RocketAmmunition", "/SimpleGame/SimpleGame/Sprites/Ammunition/Rocket.png");
-resources.add("TheGameIsLost", "/SimpleGame/Sprites/Interface/theGameIsLost.png");
+resources.add("TheGameIsLost", "/SimpleGame/SimpleGame/Sprites/Interface/theGameIsLost.png");
 resources.add("ToBeak", "/SimpleGame/SimpleGame/Sprites/Interface/ToBeak.png");
 resources.add("Intro", "/SimpleGame/SimpleGame/Sprites/Interface/Intro.png");
 resources.add("BackgroundWin", "/SimpleGame/SimpleGame/Sprites/Interface/BackgroundWin.png");
