@@ -3,10 +3,10 @@
     Point,
     CircleCollision,
     alwaysMove
-} from "/js/2DGameEngine.js";
+} from "/SimpleGame/js/2DGameEngine.js";
 
-import { resources } from "/js/SpaceArkanoid/GameResources.js";
-import { MeteorExplosion_001 } from "/js/SpaceArkanoid/Explosions.js";
+import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
+import { MeteorExplosion_001 } from "/SimpleGame/js/SpaceArkanoid/Explosions.js";
 
 
 function getFuelMeteor(img, speed, scene){
@@ -36,12 +36,14 @@ function getBigMeteor(img, speed, scene) {
     var GOMeteors1 = new GameObject(img, new Point(50, 50), 0);
     GOMeteors1.collider = new CircleCollision(100, 10, false);
     GOMeteors1.onDrow = (o) => { alwaysMove(o, speed, scene)};
-    GOMeteors1.hitPoint = 100;
+    GOMeteors1.hitPoint = 30;
     GOMeteors1.collider.onCollision = (o) => {
         o.hitPoint -= 10;
     };
     GOMeteors1.onDeleteMethod = () => { 
-        var random = Math.random() * scene.variables.get("maxFuel") / scene.variables.get("fuel");
+        var currentF = scene.variables.get("fuel");
+        if(currentF <= 0){ currentF = 1;}
+        var random = Math.random() * scene.variables.get("maxFuel") / currentF;
         if(random > 0.5){
             var f = getFuelMeteor_001(speed, scene);
             f.pos = GOMeteors1.center().add(new Point(-f.inmage.width / 2, -f.inmage.height / 2));
@@ -57,7 +59,7 @@ function getSmallMeteor(img, speed, scene) {
     var GOMeteors1 = new GameObject(img, new Point(50, 50), 0);
     GOMeteors1.collider = new CircleCollision(55, 10, false);
     GOMeteors1.onDrow = (o) => { alwaysMove(o, speed, scene)};
-    GOMeteors1.hitPoint = 30;
+    GOMeteors1.hitPoint = 10;
     GOMeteors1.collider.onCollision = (o) => {
         o.hitPoint -= 5;
     };

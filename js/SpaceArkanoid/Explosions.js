@@ -2,9 +2,9 @@
     GameObject,
     Point,
     CircleCollision
-} from "/js/2DGameEngine.js";
+} from "/SimpleGame/js/2DGameEngine.js";
 
-import { resources } from "/js/SpaceArkanoid/GameResources.js";
+import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
 
 export function ExplosionBig_001(pos, scene) {
     var e = new GameObject(resources.get("SBigExplosion"), pos, 0);

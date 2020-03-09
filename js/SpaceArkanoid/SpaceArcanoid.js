@@ -20,13 +20,13 @@ import {
     Rectangle,
     alwes,
     runOnMobile
-} from "/js/2DGameEngine.js";
+} from "/SimpleGame/js/2DGameEngine.js";
 
-import { resources } from "/js/SpaceArkanoid/GameResources.js";
+import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
 import {
     spavnRocket_litle_001,
     spavnRocketAmmunition
-} from "/js/SpaceArkanoid/Rockets.js";
+} from "/SimpleGame/js/SpaceArkanoid/Rockets.js";
 import {
     getBigMeteor_001,
     getBigMeteor_002,
@@ -34,7 +34,7 @@ import {
     getBigMeteor_004,
     getSmallMeteor_001,
     getSmallMeteor_002
-} from "/js/SpaceArkanoid/Meteors.js";
+} from "/SimpleGame/js/SpaceArkanoid/Meteors.js";
 
 const offset = 10;
 const heigthProgress = 15;
@@ -140,10 +140,10 @@ export function CreateLevel(canvas){
     scene.variables.set("ceanShot", true);
     scene.variables.set("rockrtCount", 100);
     scene.variables.set("maxRockrtCount", 100);
-    scene.variables.set("meteorsSpavtTime",2000);
+    scene.variables.set("meteorsSpavtTime",1000);
     scene.variables.set("ammunitionSpavtTime", 9000);
-    scene.variables.set("maxProgress", 10000);
-    scene.variables.set("speedAlwaysMove", 2);
+    scene.variables.set("maxProgress", 500000);
+    scene.variables.set("speedAlwaysMove", 3);
 
     scene.variables.set("fuel", 1000);
     scene.variables.set("maxFuel", 1000);
@@ -168,9 +168,6 @@ export function CreateLevel(canvas){
     var progressTimer = new Timer(scene.variables.get("maxProgress"), () => {});
     scene.timers.add(progressTimer);
     progressTimer.onTick = () => { 
-        var mp = Timer.inMS(scene.variables.get("maxProgress"));
-        var newT = 2000 - 1800 * (mp - progressTimer.time) / mp;
-        scene.variables.set("meteorsSpavtTime", newT);
         if(progressTimer.time <= 0){
             showWinScrean(scene)();
         }
@@ -231,15 +228,20 @@ export function CreateLevel(canvas){
         () => {return new Point(0, 0);},
         () => {return new Point(canvas.width, 0);},
         [   
+            () => {return getSmallMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
             () => {return getBigMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
-            () => {return getBigMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
             () => {return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
-            () => {return getSmallMeteor_002(scene.variables.get("speedAlwaysMove"), scene)}
+            () => {return getBigMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
+            () => {return getSmallMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
+            () => {return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
         ],
         1
     );
     var timerSpavnArea1 = new Timer(scene.variables.get("meteorsSpavtTime"), () => {
         spavnArea1.spavn();
+        var mp = Timer.inMS(scene.variables.get("maxProgress"));
+        var newT = 500 - 450 * (mp - progressTimer.time) / mp;
+        timerSpavnArea1.interval = Timer.inMS(newT);
     }, scene.variables.get("meteorsSpavtTime"));
     scene.timers.add(timerSpavnArea1);
 
@@ -253,7 +255,11 @@ export function CreateLevel(canvas){
         1
     );
     var timerSpavnAmmunition = new Timer(scene.variables.get("ammunitionSpavtTime"), () => {
-        var rand = Math.random() * scene.variables.get("maxRockrtCount") / scene.variables.get("rockrtCount");
+        var currentR = scene.variables.get("rockrtCount");
+        if(currentR <= 0){
+            currentR = 1;
+        }
+        var rand = Math.random() * scene.variables.get("maxRockrtCount") / currentR;
         if(rand > 0.5){
             spavnAmmunition.spavn();
         }
@@ -269,31 +275,33 @@ export function CreateLevel(canvas){
         });
     }
 
+    var playerFieldToStap = 2;
+
     function playerMoveToUp(){
         if(scene.variables.get("fuel") > 0){
             player.localVelocity.y += scene.variables.get("plaeyrSpeed");
-            scene.variables.set("fuel", scene.variables.get("fuel") - 1);
+            scene.variables.set("fuel", scene.variables.get("fuel") - playerFieldToStap);
         }
     }
 
     function playerMoveToDown(){
         if(scene.variables.get("fuel") > 0){
             player.localVelocity.y -= scene.variables.get("plaeyrSpeed");
-            scene.variables.set("fuel", scene.variables.get("fuel") - 1);
+            scene.variables.set("fuel", scene.variables.get("fuel") - playerFieldToStap);
         }
     }
 
     function playerMoveToLeft(){
         if(scene.variables.get("fuel") > 0){
             player.localVelocity.x += scene.variables.get("plaeyrSpeed");
-            scene.variables.set("fuel", scene.variables.get("fuel") - 1);
+            scene.variables.set("fuel", scene.variables.get("fuel") - playerFieldToStap);
         }
     }
 
     function playerMoveToRigth(){
         if(scene.variables.get("fuel") > 0){
             player.localVelocity.x -= scene.variables.get("plaeyrSpeed");
-            scene.variables.set("fuel", scene.variables.get("fuel") - 1);
+            scene.variables.set("fuel", scene.variables.get("fuel") - playerFieldToStap);
         }
     }
 
