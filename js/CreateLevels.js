@@ -20,13 +20,13 @@ import {
     Rectangle,
     alwes,
     runOnMobile
-} from "/SimpleGame/js/2DGameEngine.js";
+} from "./2DGameEngine.js";
 
-import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
+import { resources } from "./GameResources.js";
 import {
     spavnRocket_litle_001,
     spavnRocketAmmunition
-} from "/SimpleGame/js/SpaceArkanoid/Rockets.js";
+} from "./Rockets.js";
 import {
     getBigMeteor_001,
     getBigMeteor_002,
@@ -34,7 +34,7 @@ import {
     getBigMeteor_004,
     getSmallMeteor_001,
     getSmallMeteor_002
-} from "/SimpleGame/js/SpaceArkanoid/Meteors.js";
+} from "./Meteors.js";
 
 const offset = 10;
 const heigthProgress = 15;

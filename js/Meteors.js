@@ -3,10 +3,10 @@
     Point,
     CircleCollision,
     alwaysMove
-} from "/SimpleGame/js/2DGameEngine.js";
+} from "./2DGameEngine.js";
 
-import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
-import { MeteorExplosion_001 } from "/SimpleGame/js/SpaceArkanoid/Explosions.js";
+import { resources } from "./GameResources.js";
+import { MeteorExplosion_001 } from "./Explosions.js";
 
 
 function getFuelMeteor(img, speed, scene){

@@ -3,15 +3,15 @@
     canvasOffset,
     runOnMobile,
     enter
-} from "/SimpleGame/js/2DGameEngine.js";
-import { resources } from "/SimpleGame/js/SpaceArkanoid/GameResources.js";
+} from "./2DGameEngine.js";
+import { resources } from "./GameResources.js";
 import{
     CreateLevel,
     CreateMainMenu,
     CreateTryAgain,
     CreateControlsScrean,
     CreateWinScrean
-} from "/SimpleGame/js/SpaceArkanoid/SpaceArcanoid.js";
+} from "./CreateLevels.js";
 
 ////////////////////////////////////////////////
 // переменные
