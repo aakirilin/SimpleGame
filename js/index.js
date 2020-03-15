@@ -148,8 +148,8 @@ function GotoCreateEpilogue(){
 
 resources.onDone = () => {
     GotoMainMenu();
-    window.addEventListener("keydown", OnKeyDown);
-    window.addEventListener("keyup", OnKeyUp);
+    document.addEventListener("keydown", OnKeyDown);
+    document.addEventListener("keyup", OnKeyUp);
     canvas.addEventListener("touchstart", OnTouchStart, false);
     canvas.addEventListener("touchend", OnTouchEnd, false);
     canvas.addEventListener("touchmove", OnTouchMove, false);
