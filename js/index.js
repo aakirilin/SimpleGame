@@ -162,6 +162,8 @@ resources.onDone = () => {
 
 };
 
+window.addEventListener("load", ()=>{alert(1);}, false);
+
 function loadScrean() {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
