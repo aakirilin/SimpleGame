@@ -150,6 +150,10 @@ window.addEventListener("load", ()=>{
     loadResurses();
 }, false);
 
+window.onmessage = function(event){
+    console(event.data);
+};
+
 resources.onDone = () => {
 
     GotoMainMenu();
