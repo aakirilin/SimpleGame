@@ -9,7 +9,7 @@ import { resources } from "./GameResources.js";
 import { MeteorExplosion_001 } from "./Explosions.js";
 
 
-function getFuelMeteor(img, speed, scene){
+function getFuelMeteor(img, speed, scene, fuelValue){
     var GOMeteors1 = new GameObject(img, new Point(50, 50), 0);
     GOMeteors1.collider = new CircleCollision(20, 1, false);
     GOMeteors1.onDrow = (o) => { alwaysMove(o, speed, scene)};
@@ -19,7 +19,7 @@ function getFuelMeteor(img, speed, scene){
     };
     GOMeteors1.collider.onCollision = (o) => {
         if(o == scene.variables.get("player")){
-            scene.variables.set("fuel", scene.variables.get("fuel") + 200);
+            scene.variables.set("fuel", scene.variables.get("fuel") + fuelValue);
             if(scene.variables.get("fuel") > scene.variables.get("maxFuel")){
                 scene.variables.set("fuel", scene.variables.get("maxFuel"));
             }
@@ -29,7 +29,11 @@ function getFuelMeteor(img, speed, scene){
 }
 
 function getFuelMeteor_001(speed, scene){
-    return getFuelMeteor(resources.get("FuelMeteor"), speed, scene);
+    return getFuelMeteor(resources.get("FuelMeteor"), speed, scene, 300);
+}
+
+function getFuelMeteor_002(speed, scene){
+    return getFuelMeteor(resources.get("FuelMeteorSmal"), speed, scene, 150);
 }
 
 function getBigMeteor(img, speed, scene) {
@@ -64,6 +68,14 @@ function getSmallMeteor(img, speed, scene) {
         o.hitPoint -= 5;
     };
     GOMeteors1.onDeleteMethod = () => { 
+        var currentF = scene.variables.get("fuel");
+        if(currentF <= 0){ currentF = 1;}
+        var random = Math.random() * scene.variables.get("maxFuel") / currentF;
+        if(random > 0.5){
+            var f = getFuelMeteor_002(speed, scene);
+            f.pos = GOMeteors1.center().add(new Point(-f.inmage.width / 2, -f.inmage.height / 2));
+            scene.addGameObject(f);
+        }
         MeteorExplosion_001(GOMeteors1.center(), scene); 
     };
     return GOMeteors1;

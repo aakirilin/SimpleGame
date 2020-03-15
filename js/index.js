@@ -2,7 +2,8 @@
     canvasScale,
     canvasOffset,
     runOnMobile,
-    enter
+    enter,
+    Timer
 } from "./2DGameEngine.js";
 import { resources } from "./GameResources.js";
 import{
@@ -10,7 +11,11 @@ import{
     CreateMainMenu,
     CreateTryAgain,
     CreateControlsScrean,
-    CreateWinScrean
+    CreateWinScrean,
+    CreateIntro_2,
+    CreateIntro_3,
+    CreateRadio,
+    CreateEpilogue
 } from "./CreateLevels.js";
 
 ////////////////////////////////////////////////
@@ -99,8 +104,8 @@ function GotoMainMenu(){
     level = CreateMainMenu(canvas);
 }
 
-function GotoLevel(){
-    level = CreateLevel(canvas);
+function GotoLevel(nextLevel, meteorsTimeSpavn){
+    level = CreateLevel(canvas, nextLevel, meteorsTimeSpavn);
 }
 
 function GotoTryAgain(){
@@ -113,6 +118,25 @@ function GotoCreateControlsScrean(){
 
 function GotoCreateWinScrean(){
     level = CreateWinScrean(canvas);
+}
+
+function GotoIntro2(){
+    level = CreateIntro_2(canvas);
+}
+
+
+
+function GotoIntro3(){
+    level = CreateIntro_3(canvas);
+}
+
+//CreateRadio
+function GotoCreateRadio(nextLevel){
+    level = CreateRadio(canvas, nextLevel);
+}
+//CreateEpilogue
+function GotoCreateEpilogue(){
+    level = CreateEpilogue(canvas);
 }
 
 resources.onDone = () => {
@@ -187,13 +211,48 @@ onOrientationchange();
 window.addEventListener("resize", onResize);
 window.addEventListener("orientationchange", onOrientationchange);
 
+var temp = null;
+
 
 function draw() {
     if (pause == false) {
         if (resources.isDone()) {
-            level.nextFrame();
             if(level.gotoScene == "Level1"){
-                GotoLevel();                
+                GotoLevel("RadioIntro2", 700);  
+                temp = level;      
+            }
+            if(level.gotoScene == "Level2"){
+                //GotoLevel("RadioIntro3", 1500);    
+                level = temp;
+                level.gotoScene = "";  
+                level.variables.set("spavtRocket", true);
+                level.variables.get("progressTimer").time = Timer.inMS(level.variables.get("maxProgress"));
+                level.variables.set("nextLevel", "RadioIntro3");
+                level.sensorAreas.unplugAll();
+                level.keyEvents.unplugAll();
+                
+            }
+            if(level.gotoScene == "Level3"){
+                //GotoLevel("WinGame", 1500);
+                level = temp;  
+                level.gotoScene = ""; 
+                level.variables.set("spavtRocket", false);
+                level.variables.set("spavtMine", true); 
+                level.variables.get("progressTimer").time = Timer.inMS(level.variables.get("maxProgress"));
+                level.variables.set("nextLevel", "WinGame");
+                level.sensorAreas.unplugAll();
+                level.keyEvents.unplugAll();
+            }
+            //GotoCreateRadio
+            if(level.gotoScene == "RadioIntro2"){
+                GotoCreateRadio("Intro2");
+            }
+            if(level.gotoScene == "RadioIntro3"){
+                GotoCreateRadio("Intro3");
+            }
+
+            if(level.gotoScene == "WinGame"){
+                GotoCreateWinScrean();   
             }
             if(level.gotoScene == "TryAgain"){
                 GotoTryAgain(); 
@@ -204,9 +263,16 @@ function draw() {
             if(level.gotoScene == "MainMenu"){
                 GotoMainMenu(); 
             }
-            if(level.gotoScene == "WinScrean"){
-                GotoCreateWinScrean(); 
+            if(level.gotoScene == "Intro2"){
+                GotoIntro2();   
             }
+            if(level.gotoScene == "Intro3"){
+                GotoIntro3();   
+            }
+            if(level.gotoScene == "Epilogue"){
+                GotoCreateEpilogue();   
+            }
+            level.nextFrame();
         }
         else {
             loadScrean();
@@ -218,3 +284,9 @@ function draw() {
     requestAnimationFrame(draw);
 }
 draw();
+/*
+var audio = new Audio(); // Создаём новый элемент Audio
+  audio.src = '../Sounds/embient.ogg'; // Указываем путь к звуку "клика"
+  audio.autoplay = true; // Автоматически запускаем
+  audio.loop = true;
+  */

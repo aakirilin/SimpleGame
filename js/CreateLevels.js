@@ -19,13 +19,18 @@ import {
     canvasOffset,
     Rectangle,
     alwes,
-    runOnMobile
+    runOnMobile,
+    createImageWithText,
+    createImageWithTextSuper,
+    calkHeigthText
 } from "./2DGameEngine.js";
 
 import { resources } from "./GameResources.js";
 import {
     spavnRocket_litle_001,
-    spavnRocketAmmunition
+    spavnRocketAmmunition,
+    spavnEnemyRocket_litle_001,
+    getMine
 } from "./Rockets.js";
 import {
     getBigMeteor_001,
@@ -33,16 +38,29 @@ import {
     getBigMeteor_003,
     getBigMeteor_004,
     getSmallMeteor_001,
-    getSmallMeteor_002
+    getSmallMeteor_002,
 } from "./Meteors.js";
 
 const offset = 10;
 const heigthProgress = 15;
-var liveIcone = resources.get("Live").nextFrame();
-var rocketIcon = resources.get("Rocket1Icon").nextFrame();
-const section = resources.get("Section").nextFrame();
-const fuelIcon = resources.get("FuelIcon").nextFrame();
-const section_H = resources.get("Section_H").nextFrame();
+
+function getLiveIcone(){
+    return resources.get("Live").nextFrame();
+}
+
+function getRocketIcon(){
+    return resources.get("Rocket1Icon").nextFrame();
+}
+
+function getSection(){
+    return resources.get("Section").nextFrame();
+}
+
+function getFuelIcon(){
+    return resources.get("FuelIcon").nextFrame();
+}
+
+//const section_H = resources.get("Section_H").nextFrame();
 
 
 
@@ -70,13 +88,6 @@ function showMainMenu(scene){
     }
 }
 
-
-function showWinScrean(scene){
-    return () =>{
-        scene.gotoScene = "WinScrean";
-    }
-}
-
 function drowPlayerHitPoint(canvas, player){
     var step = 10;
     var hitPoint = player.hitPoint;
@@ -85,9 +96,9 @@ function drowPlayerHitPoint(canvas, player){
         hp = 1;
     }
     var offsetY = offset + heigthProgress;
-    canvas.drawImage(liveIcone, offset, offsetY);
+    canvas.drawImage(getLiveIcone(), offset, offsetY);
     for(var i = 0; i < hp; i++){
-        canvas.drawImage(section, offset + section.width * i + liveIcone.width, offsetY);
+        canvas.drawImage(getSection(), offset + getSection().width * i + getLiveIcone().width, offsetY);
     }
 }
 
@@ -98,10 +109,10 @@ function drowRocketCount(canvas, count, canvasW){
         hp = 1;
     }
     var offsetY = offset + heigthProgress;
-    var offsetX = canvasW - offset - rocketIcon.width;
-    canvas.drawImage(rocketIcon, offsetX,  offsetY);
+    var offsetX = canvasW - offset - getRocketIcon().width;
+    canvas.drawImage(getRocketIcon(), offsetX,  offsetY);
     for(var i = 0; i < hp; i++){
-        canvas.drawImage(section, offsetX - section.width * i - rocketIcon.width, offsetY );
+        canvas.drawImage(getSection(), offsetX - getSection().width * i - getRocketIcon().width, offsetY );
     }
 }
 
@@ -111,11 +122,11 @@ function drowFuelCount(canvas, count){
     if(f == 0 && count > 0){
         f = 1;
     }
-    var offsetY = 2 * offset + heigthProgress + fuelIcon.height;
+    var offsetY = 2 * offset + heigthProgress + getFuelIcon().height;
     var offsetX = offset;
-    canvas.drawImage(fuelIcon, offsetX,  offsetY);
+    canvas.drawImage(getFuelIcon(), offsetX,  offsetY);
     for(var i = 0; i < f ; i++){
-        canvas.drawImage(section, offsetX + section.width * i + fuelIcon.width, offsetY);
+        canvas.drawImage(getSection(), offsetX + getSection().width * i + getFuelIcon().width, offsetY);
     }
 }
 
@@ -125,26 +136,29 @@ function drowProgress(canvas, canvasW, current, max){
     canvas.fillRect(0, 0, x, heigthProgress);
 }
 
-var Back = resources.get("Back");
+export function CreateLevel(canvas, nextLevel, meteorsTimeSpavn){
+    
+    var Back = resources.get("Back");
 
-var animatedBackground = new GameObject(Back, new Point(0,0));
-var animatedBackground1 = new GameObject(Back, new Point(0,0));
+    var animatedBackground = new GameObject(Back, new Point(0,0));
+    var animatedBackground1 = new GameObject(Back, new Point(0,0));
 
-export function CreateLevel(canvas){
     var ctx = canvas.getContext("2d");
     var scene = new Scene(ctx);
 
-    
     scene.runOnMobile = !!('ontouchstart' in window);
     scene.variables.set("plaeyrSpeed", 1);
     scene.variables.set("ceanShot", true);
     scene.variables.set("rockrtCount", 100);
     scene.variables.set("maxRockrtCount", 100);
-    scene.variables.set("meteorsSpavtTime",1000);
+    scene.variables.set("meteorsSpavtTime",500);
     scene.variables.set("ammunitionSpavtTime", 9000);
-    scene.variables.set("maxProgress", 500000);
+    scene.variables.set("maxProgress", 200000);
     scene.variables.set("speedAlwaysMove", 3);
-
+    scene.variables.set("spavtRocket", false);
+    scene.variables.set("spavtMine", false);
+    scene.variables.set("nextLevel", nextLevel);
+        
     scene.variables.set("fuel", 1000);
     scene.variables.set("maxFuel", 1000);
 
@@ -165,11 +179,11 @@ export function CreateLevel(canvas){
     } );
 
 
-    var progressTimer = new Timer(scene.variables.get("maxProgress"), () => {});
+    var progressTimer = new Timer(scene.variables.get("maxProgress"), () => {}, 1000);
     scene.timers.add(progressTimer);
     progressTimer.onTick = () => { 
-        if(progressTimer.time <= 0){
-            showWinScrean(scene)();
+        if(progressTimer.time <= 10){
+            scene.gotoScene = scene.variables.get("nextLevel");
         }
      };
     scene.drowAfter.push( (c) => {
@@ -180,6 +194,8 @@ export function CreateLevel(canvas){
     var player = new GameObject(resources.get("Player"), new Point(0, 0), 0);
 
     scene.variables.set("player", player);
+    scene.variables.set("progressTimer", progressTimer);
+
 
     player.collider = new CircleCollision(45, 1, false);
     player.pos = new Point(canvas.width / 2 - player.inmage.width / 2, canvas.height - player.inmage.height - 30);
@@ -221,8 +237,22 @@ export function CreateLevel(canvas){
     scene.drowAfter.push( (c) => {drowRocketCount(c, scene.variables.get("rockrtCount"), canvas.width)} );    
     scene.drowAfter.push( (c) => {drowFuelCount(c, scene.variables.get("fuel"))} );    
 
+
+    var spavnEnemyRocketArea_1 = new SpavnArea(
+        scene,
+        () => {return new Point(-50, -100);},
+        () => {return new Point(-50, canvas.height-100);},
+        [
+            () => { return  spavnEnemyRocket_litle_001(90, scene, scene.variables.get("speedAlwaysMove"))},
+        ]
+    );
+    var timerSpavnEnemyRocketArea_1 = new Timer(1000, () => {
+        if(scene.variables.get("spavtRocket")){
+            spavnEnemyRocketArea_1.spavn(4000);
+        }
+    }, 1000);
+    scene.timers.add(timerSpavnEnemyRocketArea_1);
     // спавны объектов
-    var ceanSpavn = true;
     var spavnArea1 = new SpavnArea(
         scene,
         () => {return new Point(0, 0);},
@@ -233,14 +263,24 @@ export function CreateLevel(canvas){
             () => {return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
             () => {return getBigMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
             () => {return getSmallMeteor_002(scene.variables.get("speedAlwaysMove"), scene)},
-            () => {return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene)},
+            () => {
+                if(scene.variables.get("spavtMine")){
+                    return getMine(scene.variables.get("speedAlwaysMove"), scene, player);
+                }
+                else
+                {
+                    return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene);
+                }
+                
+            },
+            () => {return getSmallMeteor_001(scene.variables.get("speedAlwaysMove"), scene)}
         ],
         1
     );
     var timerSpavnArea1 = new Timer(scene.variables.get("meteorsSpavtTime"), () => {
-        spavnArea1.spavn();
         var mp = Timer.inMS(scene.variables.get("maxProgress"));
-        var newT = 500 - 450 * (mp - progressTimer.time) / mp;
+        spavnArea1.spavn(-1);
+        var newT = meteorsTimeSpavn - ((meteorsTimeSpavn / 3) * (mp - progressTimer.time) / mp);
         timerSpavnArea1.interval = Timer.inMS(newT);
     }, scene.variables.get("meteorsSpavtTime"));
     scene.timers.add(timerSpavnArea1);
@@ -261,7 +301,7 @@ export function CreateLevel(canvas){
         }
         var rand = Math.random() * scene.variables.get("maxRockrtCount") / currentR;
         if(rand > 0.5){
-            spavnAmmunition.spavn();
+            spavnAmmunition.spavn(-1);
         }
     }, scene.variables.get("ammunitionSpavtTime"));
     scene.timers.add(timerSpavnAmmunition);
@@ -357,8 +397,6 @@ export function CreateLevel(canvas){
     return scene;
 }
 
-
-
 function DrowInCenter(img, ctx, canvas){
     var x = canvas.width / 2 - img.width / 2;
     var y = canvas.height / 2 - img.height / 2;
@@ -373,110 +411,205 @@ function GetPosHelpButton(canvasWidth, canvasHeight, width, offsetX, offsetY){
     return new Point(canvasWidth  / 2 + offsetX, canvasHeight / 2 + offsetY)
 }
 
-export function CreateMainMenu(canvas){
-    var offsetX = 10;
-    var offsetY = 140;
-    var startNewGameButton = resources.get("StartNewGameButton");
-    var showHelpButton = resources.get("ShowHelpButton");
+function CreateScrollArea(img, canvas, dx, dy, onclick){
+    var area = new SensorArea(
+        img,
+        new Point(canvas.width/2 + dx, canvas.height/2 + dy),
+        onclick,
+        alwes, true
+    );
+    area.onResize = (c) =>{area.pos= new Point(c.width/2 + dx, c.height/2 + dy);};
+    return area;
+}
+
+function CreateScrollUpArea(canvas, dx, dy, onclick){
+    return CreateScrollArea(resources.get("ScrollUp"), canvas, dx, dy, onclick);
+}
+
+function CreateScrollDownArea(canvas, dx, dy, onclick){
+    return CreateScrollArea(resources.get("ScrollDown"), canvas, dx, dy, onclick);
+}
+
+function createMainMenuText(textSrollY){
+    var text = [
+        "Сержант, в систему вторгся вражеский флот. Уже уничтожены модули дальней связи станции. Без них невозможно направить сообщение штаб космического флота о нападении. Возьмите разведывательный крейсер и доставите сообщение лично.", 
+        "Незаметно пройти мимо кораблей противника можно только через пояс астероидов. Вам придется активно маневрировать, а при этом быстро расходуется запас топлива. К счастью в некоторых астероидах встречается урановая руда, реактор крейсера сможет работать и на ней. Смело разрушайте астероиды ракетами. Время от времени мы будем направлять в пояс контейнеры с боезапасом. ",
+        "Вылетайте, как только сможете. Удачи.",
+    ];
+    return createImageWithText(text, "30", 633, 1500, textSrollY);
+}
+
+function getFontSize(){
+    if(runOnMobile()){
+        return 25;
+    }
+    else{
+        return 30;
+    }
+}
+
+function createButton(canvas, text, dx, dy, onclick){ 
+    var fontSize = getFontSize();
+    var img = resources.get("Button");
+    var button = new SensorArea(
+        img,
+        new Point(canvas.width/2 + dx, canvas.height/2 + dy),
+        onclick,
+        alwes, true
+    );
+    var textHeigth = fontSize * text.length *1.2;
+    var text = createImageWithTextSuper(text, fontSize, img.width, textHeigth, 0, "center", "0");
+    button.beforeAfter = (c) => {c.drawImage(text, button.pos.x, button.pos.y + img.height / 2 - textHeigth / 2);};
+    button.onResize = (c) =>{button.pos= new Point(c.width/2 + dx, c.height/2 + dy);};
+    return button;
+}
+
+function CreateMenuScrean(canvas, text, textWidth, textOffsetX, img, buttons){
+    var fontSize = getFontSize();
     var ctx = canvas.getContext("2d");
     var scene = new Scene(ctx);
+    var beckFullColor = resources.get("BeckFullColor").nextFrame();
     scene.runOnMobile = !!('ontouchstart' in window);
-    scene.drowBefore.push( (c) => { 
-        DrowInCenter(resources.get("Intro").nextFrame(), c, canvas);
+    var textSrollY = 0;
+    var textArea = createImageWithText(text, fontSize, textWidth, 1500, textSrollY);
+    var heigthLimit = 1500;
+    var scrollUpArea = CreateScrollUpArea(canvas, - textOffsetX - 90, -80, null);
+    scrollUpArea.enable = false;
+    var scrollDownArea = CreateScrollDownArea(canvas, - textOffsetX - 90, 0, null);
+    scene.sensorAreas.areas = buttons;  
+    scene.sensorAreas.addArea(scrollUpArea);
+    scene.sensorAreas.addArea(scrollDownArea);
+    textArea.onload = () => {
+        scrollUpArea.action = () =>{ 
+            if(textSrollY < 0){ 
+                textSrollY += 10; 
+            }
+        }
+        scrollDownArea.action  = () =>{
+            if(textSrollY > -heigthLimit){
+                textSrollY -= 10;
+            }
+        }
+    };
+    scene.drowBefore.push( (c) => {
+        DrowInCenter(beckFullColor, c, canvas);
+        c.drawImage(textArea, canvas.width / 2 - textOffsetX, canvas.height / 2 - 261 + textSrollY);
+        DrowInCenter(img, c, canvas); 
+        scrollUpArea.enable = textSrollY < 0;
+        scrollDownArea.enable = textSrollY > -heigthLimit;
     } );
-
-    var startNewGameArea = new SensorArea(
-        startNewGameButton,
-        GetPosStartNewGameButton(canvas.width, canvas.height, startNewGameButton.width, offsetX, offsetY),
-        startNewGame(scene), alwes, true
-    );
-    startNewGameArea.onResize = (c) =>{startNewGameArea.pos= GetPosStartNewGameButton(c.width, c.height, startNewGameButton.width, offsetX, offsetY)};
-    var showHelpArea = new SensorArea(
-        showHelpButton,
-        GetPosHelpButton(canvas.width, canvas.height, showHelpButton.width, offsetX, offsetY),
-        showHelp(scene), alwes, true
-    );
-    showHelpArea.onResize = (c) =>{ showHelpArea.pos = GetPosHelpButton(c.width, c.height, showHelpButton.width, offsetX, offsetY)  };
-
-    scene.sensorAreas.addArea(startNewGameArea);
-    scene.sensorAreas.addArea(showHelpArea);
-
     return scene;
 }
 
-function GetPosTryAgainButton(anvasWidth, canvasHeight, width, offsetY){
-    return new Point(anvasWidth  / 2 - width / 2, canvasHeight / 2 + offsetY )
+export function CreateMainMenu(canvas){
+    var text = [
+        "Сержант, в систему вторгся вражеский флот. Уже уничтожены модули дальней связи станции. Без них невозможно направить сообщение штаб космического флота о нападении. Возьмите разведывательный крейсер и доставите сообщение лично.", 
+        "Незаметно пройти мимо кораблей противника можно только через пояс астероидов. Вам придется активно маневрировать, а при этом быстро расходуется запас топлива. К счастью в некоторых астероидах встречается урановая руда, реактор крейсера сможет работать и на ней. Смело разрушайте астероиды ракетами. Время от времени мы будем направлять в пояс контейнеры с боезапасом. ",
+        "Вылетайте, как только сможете. Удачи.",
+    ];
+    var offsetX = 10;
+    var offsetY = 140;
+    var back = resources.get("Intro").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Приступить", "к заданию" ], -offsetX-280, offsetY, startNewGame(scene));
+    var showHelpArea = createButton(canvas, ["Управление" ], offsetX, offsetY, showHelp(scene));
+    scene.sensorAreas.addArea(startNewGameArea);
+    scene.sensorAreas.addArea(showHelpArea);
+    return scene;
 }
 
 export function CreateTryAgain(canvas){
+    var text = [
+        "Падение галактической империи происходило в абсолютной радио тишине. Вражеский флот, переходя из систем в систему, первыми залпами уничтожал модули дальней связи. Военные силы, находившиеся в это время в системах, были слишком разрознены. Они не могли противостоять значительно превосходящей военной мощи.",
+        "Капитаны вели свои корабли в отчаянные атаки. Но каждый пал под градом вражеских залпов, так и не дождавшись подмоги.",
+    ];
     var offsetY = 140;
-    var tryAgainButton = resources.get("TryAgain");
-    var ctx = canvas.getContext("2d");
-    var scene = new Scene(ctx);
-    scene.runOnMobile = !!('ontouchstart' in window);
-    scene.drowBefore.push( (c) => { 
-        DrowInCenter(resources.get("TheGameIsLost").nextFrame(), c, canvas);
-    } );
-
-    var tryAgainArea = new SensorArea(
-        tryAgainButton,
-        GetPosTryAgainButton(canvas.width, canvas.height, tryAgainButton.width, offsetY),
-        startNewGame(scene), alwes, true
-    );
-    tryAgainArea.onResize = (c) =>{tryAgainArea.pos = GetPosTryAgainButton(c.width, c.height, tryAgainArea.width, offsetY)};
-
-    scene.sensorAreas.addArea(tryAgainArea);
+    var back = resources.get("Message").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 770, 360, back, []);
+    var startNewGameArea = createButton(canvas, ["Попытаться", "снова" ], -140, offsetY, startNewGame(scene));
+    scene.sensorAreas.addArea(startNewGameArea);
     return scene;
 }
 
-function GetToBeackButton(canvasWidth, canvasHeight, width, height, offset){
-    return new Point(canvasWidth / 2 + 450 - width - offset, canvasHeight / 2 + 300 - offset - height);
+export function CreateRadio(canvas, nextLevel){
+    var text = [
+        "Станция вызывает разведчика...",
+    ];
+    var offsetY = 140;
+    var back = resources.get("Radio").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Прием"], -140, offsetY, () => { scene.gotoScene = nextLevel;});
+    scene.sensorAreas.addArea(startNewGameArea);
+    return scene;
 }
 
-export function CreateControlsScrean(canvas){
-    var toBeack = resources.get("ToBeak");
-    var offset = 10;
-    var ctx = canvas.getContext("2d");
-    var scene = new Scene(ctx);
-    scene.runOnMobile = !!('ontouchstart' in window);
-    scene.drowBefore.push( (c) => { 
-        if(runOnMobile()){
-            DrowInCenter(resources.get("ControlsScreanMobile").nextFrame(), c, canvas);
-        }
-        else{
-            DrowInCenter(resources.get("ControlsScrean").nextFrame(), c, canvas);
-        }
-       
-    } );
+export function CreateIntro_2(canvas){
+    var text = [
+        "Сержант, отлично справляетесь, пройдена треть пути!", 
+        "Далее будьте осторожнее, фронт сместился в сторону пояса астероидов. До Вас могут долетать отдельные вражеские торпеды.",
+    ];
+    var offsetY = 140;
+    var back = resources.get("IntroRadio").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Продолжить"], -140, offsetY, () => { scene.gotoScene = "Level2";});
+    scene.sensorAreas.addArea(startNewGameArea);
+    return scene;
+}
 
-    var toBeackArea = new SensorArea(
-        toBeack,
-        GetToBeackButton(canvas.width, canvas.height, toBeack.width, toBeack.height, offset),
-        showMainMenu(scene), alwes, true
-    );
-    toBeackArea.onResize = (c) =>{toBeackArea.pos = GetToBeackButton(canvas.width, canvas.height, toBeack.width, toBeack.height, offset) };
-
-    scene.sensorAreas.addArea(toBeackArea);
+export function CreateIntro_3(canvas){
+    var text = [
+        "Сержант, рад Вас слышать! Осталась треть пути!",
+        "Силы обороны отброшены к станции. Что бы хоть как то замедлить продвижение противника активированы магнитные мины. Часть из них была установлена в поясе астероидов. К несчастью это устаревшая модель — в них нет системы распознавания свой-чужой. Держитесь от них на расстоянии. Но даже если мина активировалась есть шанс, что быстрый корабль, наподобие Вашего, сможет от нее оторваться.",
+        "Надеемся на Вас.",
+    ];
+    var offsetY = 140;
+    var back = resources.get("IntroRadio").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Продолжить"], -140, offsetY, () => { scene.gotoScene = "Level3";});
+    scene.sensorAreas.addArea(startNewGameArea);
     return scene;
 }
 
 export function CreateWinScrean(canvas){
-    var toBeack = resources.get("ToBeak");
+    var text = [
+        "Пояс астероидов внезапно закончился. Бортовой компьютер уже рассчитывал курс к штабу космического флота. Казалось это происходило чуть быстрее чем обычно. Мгновение и экран, холодным зеленым светом, высветил: «Расчет закончен. Включены ионные двигатели». Пучек частиц вырвался из сопла, толкая корабль в темноту космоса. Где-то позади, синими всполохами, шиты станции отзывались на алые шары взрывов, атакующие корабли несли разрушение непокорной станции. Впереди же, только размазанные точки звезд.",
+        "Прошло не более пяти стандартных единиц времени, как началось торможение.  Компьютер, имея ключи высшего доступа, быстро получил курс на посадку. Штаб космического флота призывно манил корабль стыковочными огнями. Слабый удар по корпусу возвестил о стыковке. Быстрое выравнивание давления. Герметичная дверь открылась с легким шипением. В проеме стоял офицер штаба.",
+    ];
     var offsetY = 140;
-    var ctx = canvas.getContext("2d");
-    var scene = new Scene(ctx);
-    scene.runOnMobile = !!('ontouchstart' in window);
-    scene.drowBefore.push( (c) => { 
-        DrowInCenter(resources.get("BackgroundWin").nextFrame(), c, canvas);
-    } );
+    var back = resources.get("BackWin").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Продолжить"], -140, offsetY, () => { scene.gotoScene = "Epilogue";});
+    scene.sensorAreas.addArea(startNewGameArea);
+    return scene;
+}
 
-    var toBeackArea = new SensorArea(
-        toBeack,
-        GetPosTryAgainButton(canvas.width, canvas.height, toBeack.width, offsetY),
-        showMainMenu(scene), alwes, true
-    );
-    toBeackArea.onResize = (c) =>{tryAgainArea.pos = GetPosTryAgainButton(c.width, c.height, toBeack.width, offsetY)};
+export function CreateControlsScrean(canvas){
+    var text = [
+        "Управление крейсером не отличается от правления другими кораблями. Вся значимая информация отражается на экране командира корабля. В верхней части слева — прочность корпуса и запас топлива, справа — количество ракет."
+    ];
+    if(runOnMobile()){
+        text.push("Управлять маневровыми двигателями можно сенсорными клавишами внизу экрана слева, клавиша внизу экрана справа отвечает за запуск ракет.");
+    }
+    else{
+        text.push("Управлять маневровыми двигателями можно клавишами вверх, вниз, влево, вправо, клавиша пробел отвечает за запуск ракет.");
+    }
+    var offsetY = 140;
+    var back = resources.get("Message").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 770, 360, back, []);
+    var startNewGameArea = createButton(canvas, ["Вернуться", "к брифингу" ], -140, offsetY, showMainMenu(scene));
+    scene.sensorAreas.addArea(startNewGameArea);
+    return scene;
+}
 
-    scene.sensorAreas.addArea(toBeackArea);
+export function CreateEpilogue(canvas){
+    var text = [
+        "Доставленное сообщение поможет спасти много жизней.",
+        "Благодарю за службу!",
+    ];
+    var offsetY = 140;
+    var back = resources.get("BackgroundWin").nextFrame();
+    var scene = CreateMenuScrean(canvas, text, 633, 220, back, []);
+    var startNewGameArea = createButton(canvas, ["Пройти игру", "сначала"], -140, offsetY, () => { scene.gotoScene = "MainMenu";});
+    scene.sensorAreas.addArea(startNewGameArea);
     return scene;
 }

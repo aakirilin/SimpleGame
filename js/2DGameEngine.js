@@ -10,6 +10,8 @@ export const enter = 13;
 export const onlu = "onlu";
 export const alwes = "alwes";
 
+export const textColor = "LightSkyBlue";
+
 export function runOnMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent);
 };
@@ -20,6 +22,9 @@ export class KeyEvent {
         this.action = action;
         this.isPress = false;
         this.onState = onState;
+    }
+    unplug(){
+        this.isPress = false;
     }
     onKeyDown(keyCode) {
         if (keyCode == this.keyCode) {
@@ -44,6 +49,11 @@ export class KeyEvent {
 export class KeyEvents {
     constructor() {
         this.keyEvent = [];
+    }
+    unplugAll(){
+        this.keyEvent.forEach((k)=>{
+            k.unplug();
+        });
     }
     addKeyEvent(keyEvent) {
         this.keyEvent.push(keyEvent);
@@ -214,11 +224,16 @@ export class GameObject {
         this.onMove = [];
         this.onResize = null;
     }
+    dispose(){
+        this.inmage.dispose();
+        this.inmage = null;
+    }
 
     onDelete() {
         if (this.onDeleteMethod != null) {
             this.onDeleteMethod();
         }
+        this.dispose();
     }
     loadFromUrlImage(url, startPos, rotation = 0) {
         this.inmage.src = url;
@@ -254,6 +269,9 @@ export class GameObject {
             this.onDelete();
             return;
         }
+        if(this.inmage == null){
+            return;
+        }
         if (this.onDrow != null) {
             this.onDrow(this);
         }
@@ -271,6 +289,9 @@ export class GameObject {
         this._drowChilds(_canvas);
     }
     center() {
+        if(this.inmage == null){
+            return new Point(0, 0);
+        }
         return new Point(
             this.inmage.width / 2 + this.pos.x,
             this.inmage.height / 2 + this.pos.y);
@@ -403,6 +424,7 @@ export class Scene {
             go.onDelete();
         }
     }
+
     tick() {
         this.timers.tick();
     }
@@ -441,30 +463,29 @@ export class Resources {
         return this.all == this.countLoads;
     }
 
-    add(name, src) {
+    addImage(name, src){
         this.all += 1;
-        var image = new SingleImage(src);
-        this.imgs.set(name, image);
+        var image = new Image();
+        image.src = src;
         image.onload = () => {
             this.countLoads += 1;
+            this.imgs.set(name, () => { 
+                return new SingleImage(image)});
             if (this.isDone() && this.onDone != null) {
                 this.onDone();
             }
         };
+        this.imgs.set(src, image);
+        return image;
+    }
+
+    add(name, src) {
+        this.addImage(name, src);
     }
 
     addSequence(name, imgs, delay){
         imgs.forEach((i) => {
-            var img = new Image();
-            img.src = i;
-            this.all += 1;
-            img.onload = () => {
-                this.countLoads += 1;
-                if (this.isDone() && this.onDone != null) {
-                    this.onDone();
-                }
-            };
-            this.imgs.set(i, img);
+            this.addImage(i, i);
         });
         this.imgs.set(name, ()=> {
             var images = [];
@@ -478,35 +499,23 @@ export class Resources {
     get(name) {
         if (this.imgs.has(name)) {
             var item = this.imgs.get(name);
-            if(typeof item === "function"){
-                return item();
-            }
-            else
-            {
-                return item;
-            }
+            return item();
         }
         return null;
     }
 }
 
 export class SingleImage{
-    constructor(src){
-        this.image = new Image();
-        this.width = 0;
-        this.height = 0;
-        this.onload = null;
-        this.image.src = src;
-        this.image.onload = ()=>{
-            if(this.onload != null){
-                this.onload();
-            }
-            this.width = this.image.width;
-            this.height = this.image.height;
-        };
+    constructor(image){
+        this.image = image;
+        this.width = image.width;
+        this.height = image.height;
     }
     nextFrame(){
         return this.image;
+    }
+    dispose(){
+        this.image = null;
     }
 }
 
@@ -532,7 +541,10 @@ export class ImageSequence{
         else{
             this.timer +=1;
         }
-        return this.images[this.currentImg];
+        return this.images[this.currentImg].nextFrame();
+    }
+    dispose(){
+        this.images.forEach((i) => {i.dispose()})
     }
 }
 
@@ -550,18 +562,25 @@ export class SpavnArea {
         this.scene = scene;
         this.timer = timer;
         this.onResize = null;
+        this.maxNumberOfAttempts = 10;
     }
 
     getRandomPoint(w, h, scene) {
         var p = null;
         var begin = this.beign();
         var end = this.end();
+        var numberOfAttempts = 0;
         do{
             p = new Point(
                 randomInteger(begin.x, end.x - w),
                 randomInteger(begin.y - h, end.y - h));
-        } while(scene.locationsIsBusy(new Rectangle(p.y, p.y + h, p.x, p.x + w)));
-        return p;
+            numberOfAttempts += 1;
+        } while(scene.locationsIsBusy(new Rectangle(p.y, p.y + h, p.x, p.x + w)) && numberOfAttempts < this.maxNumberOfAttempts);
+        if(numberOfAttempts >= this.maxNumberOfAttempts){
+            return null;
+        }else{
+            return p;
+        }
     }
 
     getRandomObject() {
@@ -569,11 +588,22 @@ export class SpavnArea {
         return this.objects[i];
     }
 
-    spavn() {
+    spavn(liveTime) {
         var obj = this.getRandomObject()();
-        obj.pos = this.getRandomPoint(obj.inmage.width, obj.inmage.height, this.scene);
-        this.scene.addGameObject(obj);
-        return obj;
+        var pos = this.getRandomPoint(obj.inmage.width, obj.inmage.height, this.scene);
+        if(pos == null){
+            return null;
+        }
+        else{
+            obj.pos = pos;
+            if(liveTime <= 0){
+                this.scene.addGameObject(obj);
+            }
+            else{
+                this.scene.addGameObjectWithLiveTime(obj, liveTime);
+            }
+            return obj;
+        }
     }
 }
 
@@ -588,10 +618,26 @@ export class SensorArea {
         this.id = null;
         this.showConstantly = showConstantly;
         this.onResize = null;
+        this.beforeDraw = null;
+        this.beforeAfter = null;
+        this.enable = true;
     }
 
+    unplug(){
+        this.isPress = false;
+    }
+    
     drow(_canvas) {
+        if(this.enable != true){
+            return;
+        }
+        if(this.beforeDraw != null){
+            this.beforeDraw(_canvas);
+        }
         _canvas.drawImage(this.imege.nextFrame(), this.pos.x, this.pos.y);
+        if(this.beforeAfter != null){
+            this.beforeAfter(_canvas);
+        }
     }
 
     center() {
@@ -603,7 +649,7 @@ export class SensorArea {
     mouseDown(point, e, s) {
         var p = new Point(point.clientX, point.clientY).sub(e);
         p = new Point(p.x * s.x, p.y * s.y); 
-        this.isPress = this.isTorhced(p);
+        this.isPress = this.isTorhced(p) && this.enable;
     }
 
     mouseUp(point, e, s) {
@@ -633,7 +679,7 @@ export class SensorArea {
         for (var i = 0; i < touches.length; i++) {
             var p = new Point(touches[i].clientX, touches[i].clientY).sub(e);
             p = new Point(p.x * s.x, p.y * s.y); 
-            if (this.isTorhced(p)) {
+            if (this.isTorhced(p) && this.enable) {
                 this.isPress = true;
                 this.id = touches[i].identifier;
             }
@@ -677,6 +723,11 @@ export class SensorAreas {
         this.areas = [];
     }
 
+    unplugAll(){
+        this.areas.forEach((a)=> {
+            a.unplug();
+        });
+    }
     
     onResize(canvas){
         this.areas
@@ -732,9 +783,6 @@ export class SensorAreas {
             a.touchend(evt);
         });
     }
-
-
-
     exeAction(runOnMobile) {
         this.areas.forEach((a) => {
             if(runOnMobile || a.showConstantly){
@@ -767,6 +815,7 @@ export class Timers {
                 this.deleteTimer(t);
             }
         });
+
         //var timersOfTimeOut = this.items.filter((t) => { return t.time <= 0; });
     }
 
@@ -824,4 +873,40 @@ export function canvasScale(canvas) {
 
 export function canvasOffset(canvas) {
     return new Point(canvas.offsetLeft - document.body.scrollLeft, canvas.offsetTop - document.body.scrollTop);
+}
+
+export function calkHeigthText(imgText, fontSize, width, height){
+    var canvas = document.createElement('canvas');
+    canvas.width = imgText.width;
+    canvas.height = imgText.height;
+    var context = canvas.getContext('2d');
+    context.drawImage(imgText, 0 , 0);
+    for(var h = 0; h < imgText.height / fontSize; h++){
+        var pixel = context.getImageData(0, h * fontSize, imgText.width, fontSize).data;
+        var line = 0
+        pixel.forEach((i) => {
+            line += i;
+        });
+        if(line == 0){
+            return h * fontSize;
+        }
+    }
+    return imgText.height;
+}
+
+export function createImageWithTextSuper(lines, fontSize, width, heigth, offsetX, textAlign, textIndent){
+    var data = "data:image/svg+xml," +
+           "<svg xmlns='http://www.w3.org/2000/svg' width='"+width+"' height='"+heigth+"'>" +
+             "<foreignObject y='"+offsetX+"' width='100%' height='"+heigth*2+"px'><div xmlns='http://www.w3.org/1999/xhtml' style='color:"+textColor+";font-size:"+fontSize+"px'>";
+    for(var i = 0; i < lines.length; i++){
+        data += "<div style='text-indent:"+textIndent+";text-align:"+textAlign+"'>" + lines[i] + "</div>";
+    }
+    data += "</div></foreignObject></svg>";
+    var img = new Image();
+    img.src = data;
+    return img;
+}
+
+export function createImageWithText(lines, fontSize, width, heigth, offsetX){
+    return createImageWithTextSuper(lines, fontSize, width, heigth, offsetX, "justify", "1em");
 }
