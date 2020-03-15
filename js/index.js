@@ -32,13 +32,6 @@ var pause = false;
 
 function OnKeyDown(e){
     e.preventDefault();
-    let frame = document.getElementById('fXD').contentDocument;
-    if(frame != null){
-        let newEvent = new Event('keydown', {key: e.key, code: e.code, composed: true, charCode: e.charCode, keyCode: e.keyCode, which: e.which, bubbles: true, cancelable: true, which: e.keyCode});
-        newEvent.keyCode = e.keyCode;
-        newEvent.which = e.keyCode;
-        frame.dispatchEvent(newEvent);
-    }
     if(level != null){
         level.keyEvents.onKeyDown(e.keyCode);
     }
@@ -155,12 +148,14 @@ function GotoCreateEpilogue(){
 
 resources.onDone = () => {
     GotoMainMenu();
-    document.addEventListener("keydown", OnKeyDown, false);
-    document.addEventListener("keyup", OnKeyUp, false);
+    
+    document.onkeydown = OnKeyDown;
+    document.onkeyup = OnKeyUp;
+    //document.addEventListener("keydown", OnKeyDown, false);
+    //document.addEventListener("keyup", OnKeyUp, false);
     canvas.addEventListener("touchstart", OnTouchStart, false);
     canvas.addEventListener("touchend", OnTouchEnd, false);
     canvas.addEventListener("touchmove", OnTouchMove, false);
-
     canvas.addEventListener("mouseup", OnMouseUp, false);
     canvas.addEventListener("mousedown", OnMouseDown, false);
     canvas.addEventListener("mousemove", OnMouseMove, false);
@@ -298,9 +293,4 @@ function draw() {
     requestAnimationFrame(draw);
 }
 draw();
-/*
-var audio = new Audio(); // Создаём новый элемент Audio
-  audio.src = '../Sounds/embient.ogg'; // Указываем путь к звуку "клика"
-  audio.autoplay = true; // Автоматически запускаем
-  audio.loop = true;
-  */
+
