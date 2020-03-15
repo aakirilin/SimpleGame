@@ -31,6 +31,7 @@ var level = null;
 var pause = false;
 
 function OnKeyDown(e){
+    e.preventDefault();
     if(level != null){
         level.keyEvents.onKeyDown(e.keyCode);
     }
@@ -40,14 +41,16 @@ function OnKeyDown(e){
 }
 
 function OnKeyUp(e){
+    e.preventDefault();
     if(level != null){
         level.keyEvents.onKeyUp(e.keyCode);
     }
 }
 
 function OnTouchStart(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
+        
         var s = canvasScale(canvas);
         var o = canvasOffset(canvas);
         level.sensorAreas.touchstart(e, o, s);
@@ -55,15 +58,17 @@ function OnTouchStart(e){
 }
 
 function OnTouchEnd(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
+        
         level.sensorAreas.touchend(e);
     }
 }
 
 function OnTouchMove(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
+        
         var s = canvasScale(canvas);
         var o = canvasOffset(canvas);
         level.sensorAreas.touchmove(e, o, s);
@@ -72,8 +77,8 @@ function OnTouchMove(e){
 
 
 function OnMouseDown(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
         var s = canvasScale(canvas);
         var o = canvasOffset(canvas);
         level.sensorAreas.mouseDown(e, o, s);
@@ -82,8 +87,9 @@ function OnMouseDown(e){
 
 //mouseMove
 function OnMouseMove(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
+        
         var s = canvasScale(canvas);
         var o = canvasOffset(canvas);
         level.sensorAreas.mouseMove(e, o, s);
@@ -92,8 +98,9 @@ function OnMouseMove(e){
 
 //mouseUp
 function OnMouseUp(e){
+    e.preventDefault();
     if(level != null){
-        e.preventDefault();
+        
         var s = canvasScale(canvas);
         var o = canvasOffset(canvas);
         level.sensorAreas.mouseUp(e, o, s);
