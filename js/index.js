@@ -153,10 +153,10 @@ window.addEventListener("load", ()=>{
 resources.onDone = () => {
 
     GotoMainMenu();
-    window.onkeydown = OnKeyDown;
-    window.onkeyup = OnKeyUp;
-    //document.addEventListener("keydown", OnKeyDown, false);
-    //document.addEventListener("keyup", OnKeyUp, false);
+    //window.onkeydown = OnKeyDown;
+    //window.onkeyup = OnKeyUp;
+    window.addEventListener("keydown", OnKeyDown, false);
+    window.addEventListener("keyup", OnKeyUp, false);
     canvas.addEventListener("touchstart", OnTouchStart, false);
     canvas.addEventListener("touchend", OnTouchEnd, false);
     canvas.addEventListener("touchmove", OnTouchMove, false);
