@@ -460,7 +460,7 @@ export class Resources {
     }
 
     isDone() {
-        return this.all == this.countLoads;
+        return this.all == this.countLoads && this.all != 0;
     }
 
     addImage(name, src){

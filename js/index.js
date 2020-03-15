@@ -5,7 +5,7 @@
     enter,
     Timer
 } from "./2DGameEngine.js";
-import { resources } from "./GameResources.js";
+import { resources, loadResurses } from "./GameResources.js";
 import{
     CreateLevel,
     CreateMainMenu,
@@ -146,11 +146,15 @@ function GotoCreateEpilogue(){
     level = CreateEpilogue(canvas);
 }
 
+window.addEventListener("load", ()=>{
+    loadResurses();
+}, false);
+
 resources.onDone = () => {
+
     GotoMainMenu();
-    
-    document.onkeydown = OnKeyDown;
-    document.onkeyup = OnKeyUp;
+    window.onkeydown = OnKeyDown;
+    window.onkeyup = OnKeyUp;
     //document.addEventListener("keydown", OnKeyDown, false);
     //document.addEventListener("keyup", OnKeyUp, false);
     canvas.addEventListener("touchstart", OnTouchStart, false);
@@ -162,7 +166,6 @@ resources.onDone = () => {
 
 };
 
-window.addEventListener("load", ()=>{alert(1);}, false);
 
 function loadScrean() {
     ctx.fillStyle = "#fff";

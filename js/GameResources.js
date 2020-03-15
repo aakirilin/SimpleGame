@@ -5,7 +5,8 @@
 
 export var resources = new Resources();
 
-resources.add("Player", "./Sprites/Ships/Player.png");
+export function loadResurses(){
+    resources.add("Player", "./Sprites/Ships/Player.png");
 
 resources.add("Rocket1", "./Sprites/Missiles/spaceMissiles_001.png");
 resources.add("Rocket2", "./Sprites/Missiles/spaceMissiles_006.png");
@@ -83,3 +84,6 @@ resources.addSequence("SMeteorExplosion", [
     "./Sprites/Effects/MeteorExplosion_007.png",
     "./Sprites/Effects/MeteorExplosion_008.png"
 ], 5);
+}
+
+
