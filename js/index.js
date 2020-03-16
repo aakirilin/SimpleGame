@@ -31,6 +31,7 @@ var level = null;
 var pause = false;
 
 function OnKeyDown(e){
+    console.log(1);
     e.preventDefault();
     if(level != null){
         level.keyEvents.onKeyDown(e.keyCode);
@@ -155,19 +156,18 @@ window.onmessage = function(event){
 };
 
 resources.onDone = () => {
-
+    window.focus();
     GotoMainMenu();
     //window.onkeydown = OnKeyDown;
     //window.onkeyup = OnKeyUp;
-    window.addEventListener("keydown", OnKeyDown, false);
-    window.addEventListener("keyup", OnKeyUp, false);
-    canvas.addEventListener("touchstart", OnTouchStart, false);
-    canvas.addEventListener("touchend", OnTouchEnd, false);
-    canvas.addEventListener("touchmove", OnTouchMove, false);
-    canvas.addEventListener("mouseup", OnMouseUp, false);
-    canvas.addEventListener("mousedown", OnMouseDown, false);
-    canvas.addEventListener("mousemove", OnMouseMove, false);
-
+    document.addEventListener("keydown", OnKeyDown, true);
+    document.addEventListener("keyup", OnKeyUp, true);
+    canvas.addEventListener("touchstart", OnTouchStart, true);
+    canvas.addEventListener("touchend", OnTouchEnd, true);
+    canvas.addEventListener("touchmove", OnTouchMove, true);
+    canvas.addEventListener("mouseup", OnMouseUp, true);
+    canvas.addEventListener("mousedown", OnMouseDown, true);
+    canvas.addEventListener("mousemove", OnMouseMove, true);
 };
 
 
