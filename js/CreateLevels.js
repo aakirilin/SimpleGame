@@ -279,7 +279,9 @@ export function CreateLevel(canvas, nextLevel, meteorsTimeSpavn){
     );
     var timerSpavnArea1 = new Timer(scene.variables.get("meteorsSpavtTime"), () => {
         var mp = Timer.inMS(scene.variables.get("maxProgress"));
-        spavnArea1.spavn(-1);
+        if(progressTimer.time / mp > 0.02 ){
+            spavnArea1.spavn(-1);
+        }
         var newT = meteorsTimeSpavn - ((meteorsTimeSpavn / 3) * (mp - progressTimer.time) / mp);
         timerSpavnArea1.interval = Timer.inMS(newT);
     }, scene.variables.get("meteorsSpavtTime"));

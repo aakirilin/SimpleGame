@@ -835,6 +835,7 @@ export class Timer {
         this.enable = true;
         this.onTick = null;
     }
+
     static inMS(frame){
         return frame / 1000 * 60;
     }

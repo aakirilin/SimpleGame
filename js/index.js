@@ -240,7 +240,6 @@ function draw() {
                 temp = level;      
             }
             if(level.gotoScene == "Level2"){
-                //GotoLevel("RadioIntro3", 1500);    
                 level = temp;
                 level.gotoScene = "";  
                 level.variables.set("spavtRocket", true);
@@ -251,7 +250,6 @@ function draw() {
                 
             }
             if(level.gotoScene == "Level3"){
-                //GotoLevel("WinGame", 1500);
                 level = temp;  
                 level.gotoScene = ""; 
                 level.variables.set("spavtRocket", false);
@@ -261,7 +259,6 @@ function draw() {
                 level.sensorAreas.unplugAll();
                 level.keyEvents.unplugAll();
             }
-            //GotoCreateRadio
             if(level.gotoScene == "RadioIntro2"){
                 GotoCreateRadio("Intro2");
             }
